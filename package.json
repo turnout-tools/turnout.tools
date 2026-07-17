@@ -1,0 +1,27 @@
+{
+  "name": "turnout.tools",
+  "type": "module",
+  "version": "1.0.0",
+  "homepage": "https://github.com/turnout-tools/turnout.tools#readme",
+  "bugs": {
+    "url": "https://github.com/turnout-tools/turnout.tools/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/turnout-tools/turnout.tools.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^7.1.1"
+  }
+}

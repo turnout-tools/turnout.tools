@@ -1,0 +1,530 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from './Layout.astro';
+
+interface Props {
+  frontmatter: {
+    title: string;
+    description?: string;
+    category?: string;
+  };
+  headings: {
+    depth: number;
+    slug: string;
+    text: string;
+  }[];
+}
+
+const { frontmatter, headings } = Astro.props;
+
+// Fetch all docs to build the left sidebar navigation dynamically
+const allDocs = await getCollection('docs');
+
+// Sort docs by order
+const sortedDocs = allDocs.sort((a, b) => (a.data.order ?? 0) - (b.data.order ?? 0));
+
+// Group docs by category
+const categories: Record<string, typeof sortedDocs> = {};
+for (const doc of sortedDocs) {
+  const cat = doc.data.category ?? 'General Resources';
+  if (!categories[cat]) {
+    categories[cat] = [];
+  }
+  categories[cat].push(doc);
+}
+
+// Order categories (General first, then Playbooks, then others)
+const orderedCategoryNames = Object.keys(categories).sort((a, b) => {
+  if (a === 'General Resources') return -1;
+  if (b === 'General Resources') return 1;
+  return a.localeCompare(b);
+});
+
+// Determine active path to highlight the active menu item
+const currentPath = Astro.url.pathname;
+---
+
+<Layout title={`${frontmatter.title} — Turnout Knowledge Base`} description={frontmatter.description}>
+  <div class="docs-wrapper">
+    <div class="container docs-container">
+      
+      <!-- Left Sidebar: Dynamic Navigation -->
+      <aside class="docs-sidebar-left" id="docs-sidebar">
+        <div class="sidebar-scroll-container">
+          {orderedCategoryNames.map((categoryName) => (
+            <div class="sidebar-category">
+              <h3 class="sidebar-category-title">{categoryName}</h3>
+              <ul class="sidebar-links">
+                {categories[categoryName].map((doc) => {
+                  const normalizedId = doc.id.replace(/\.md$/, '');
+                  const href = normalizedId === 'index' ? '/docs' : `/docs/${normalizedId}`;
+                  const isActive = currentPath === href || (currentPath === '/docs/' && href === '/docs');
+                  return (
+                    <li>
+                      <a href={href} class={isActive ? 'active' : ''}>
+                        {doc.data.title}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </aside>
+
+      <!-- Mobile Sidebar Toggle -->
+      <button class="mobile-sidebar-toggle" id="sidebar-toggle" aria-label="Toggle menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+        Menu
+      </button>
+
+      <!-- Center: Markdown Content -->
+      <main class="docs-content-area">
+        <article class="prose">
+          <div class="docs-breadcrumbs">
+            <a href="/docs">Knowledge Base</a> 
+            <span class="breadcrumb-separator">/</span> 
+            <span class="breadcrumb-current">{frontmatter.category ?? 'General'}</span>
+          </div>
+          
+          <h1 class="docs-title">{frontmatter.title}</h1>
+          {frontmatter.description && <p class="docs-description">{frontmatter.description}</p>}
+          
+          <hr class="docs-divider" />
+          
+          <div class="markdown-body">
+            <slot />
+          </div>
+        </article>
+      </main>
+
+      <!-- Right Sidebar: Table of Contents -->
+      <aside class="docs-sidebar-right">
+        {headings && headings.filter(h => h.depth > 1 && h.depth < 4).length > 0 && (
+          <div class="toc-container">
+            <h3 class="toc-title">On This Page</h3>
+            <ul class="toc-links">
+              {headings
+                .filter(h => h.depth > 1 && h.depth < 4)
+                .map((heading) => (
+                  <li class={`toc-depth-${heading.depth}`}>
+                    <a href={`#${heading.slug}`} class="toc-link">
+                      {heading.text}
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        )}
+      </aside>
+
+    </div>
+  </div>
+</Layout>
+
+<style>
+  /* --- Docs Layout Wrapper --- */
+  .docs-wrapper {
+    min-height: calc(100vh - var(--header-height));
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .docs-container {
+    display: grid;
+    grid-template-columns: 260px 1fr 220px;
+    gap: 3rem;
+    padding-top: 2.5rem;
+    padding-bottom: 5rem;
+    position: relative;
+  }
+
+  @media (max-width: 1100px) {
+    .docs-container {
+      grid-template-columns: 240px 1fr;
+      gap: 2rem;
+    }
+    .docs-sidebar-right {
+      display: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .docs-container {
+      grid-template-columns: 1fr;
+      padding-top: 1rem;
+    }
+    .docs-sidebar-left {
+      display: none;
+      position: fixed;
+      top: var(--header-height);
+      left: 0;
+      width: 280px;
+      height: calc(100vh - var(--header-height));
+      background-color: var(--background);
+      border-right: 1px solid var(--border);
+      z-index: 40;
+      padding: 2rem 1.5rem;
+      box-shadow: var(--shadow-floating);
+    }
+    .docs-sidebar-left.open {
+      display: block;
+    }
+  }
+
+  /* --- Mobile Toggle Button --- */
+  .mobile-sidebar-toggle {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--foreground);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    width: fit-content;
+    box-shadow: var(--shadow-soft);
+  }
+
+  @media (max-width: 768px) {
+    .mobile-sidebar-toggle {
+      display: flex;
+    }
+  }
+
+  /* --- Left Sidebar (Nav) --- */
+  .docs-sidebar-left {
+    position: sticky;
+    top: calc(var(--header-height) + 2.5rem);
+    height: calc(100vh - var(--header-height) - 5rem);
+    overflow: hidden;
+  }
+
+  .sidebar-scroll-container {
+    height: 100%;
+    overflow-y: auto;
+    padding-right: 1rem;
+  }
+
+  .sidebar-scroll-container::-webkit-scrollbar {
+    width: 4px;
+  }
+  .sidebar-scroll-container::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 4px;
+  }
+
+  .sidebar-category {
+    margin-bottom: 2rem;
+  }
+
+  .sidebar-category-title {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted-foreground);
+    margin-bottom: 0.75rem;
+  }
+
+  .sidebar-links {
+    list-style: none;
+  }
+
+  .sidebar-links li {
+    margin-bottom: 0.5rem;
+  }
+
+  .sidebar-links a {
+    display: block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    color: var(--foreground);
+    opacity: 0.75;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .sidebar-links a:hover {
+    opacity: 1;
+    background-color: var(--secondary);
+    color: var(--primary);
+  }
+
+  .sidebar-links a.active {
+    opacity: 1;
+    background-color: oklch(from var(--primary) l c h / 10%);
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* --- Right Sidebar (ToC) --- */
+  .docs-sidebar-right {
+    position: sticky;
+    top: calc(var(--header-height) + 2.5rem);
+    height: calc(100vh - var(--header-height) - 5rem);
+  }
+
+  .toc-container {
+    border-left: 1px solid var(--border);
+    padding-left: 1.25rem;
+  }
+
+  .toc-title {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted-foreground);
+    margin-bottom: 0.75rem;
+  }
+
+  .toc-links {
+    list-style: none;
+    display: flex;
+    flex-col: column;
+    gap: 0.5rem;
+  }
+
+  .toc-links a {
+    display: block;
+    color: var(--foreground);
+    opacity: 0.7;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    transition: all 0.2s ease;
+  }
+
+  .toc-links a:hover, .toc-links a.active {
+    opacity: 1;
+    color: var(--primary);
+  }
+
+  .toc-depth-3 {
+    padding-left: 0.75rem;
+  }
+
+  /* --- Content Styling --- */
+  .docs-content-area {
+    min-width: 0;
+  }
+
+  .docs-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    margin-bottom: 1rem;
+  }
+
+  .docs-breadcrumbs a {
+    color: var(--muted-foreground);
+  }
+
+  .docs-breadcrumbs a:hover {
+    color: var(--primary);
+  }
+
+  .breadcrumb-separator {
+    opacity: 0.5;
+  }
+
+  .breadcrumb-current {
+    color: var(--foreground);
+    opacity: 0.9;
+  }
+
+  .docs-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+
+  .docs-description {
+    font-size: 1.15rem;
+    color: var(--muted-foreground);
+    margin-bottom: 1.5rem;
+    font-weight: 450;
+    line-height: 1.5;
+  }
+
+  .docs-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  /* --- Markdown Content Area --- */
+  .markdown-body {
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .markdown-body :global(h2) {
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .markdown-body :global(h3) {
+    font-size: 1.25rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .markdown-body :global(p) {
+    margin-bottom: 1.25rem;
+  }
+
+  .markdown-body :global(ul), .markdown-body :global(ol) {
+    margin-top: 0;
+    margin-bottom: 1.25rem;
+    padding-left: 2rem;
+  }
+
+  .markdown-body :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  .markdown-body :global(li > ul), .markdown-body :global(li > ol) {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+  }
+
+  .markdown-body :global(hr) {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+  }
+
+  /* Tables in Markdown */
+  .markdown-body :global(table) {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  .markdown-body :global(table th) {
+    background-color: var(--card);
+    font-weight: 600;
+    text-align: left;
+    border: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+  }
+
+  .markdown-body :global(table td) {
+    border: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+  }
+
+  /* Alerts / Blockquotes */
+  .markdown-body :global(blockquote) {
+    border-left: 4px solid var(--brand-orange);
+    background-color: oklch(from var(--brand-orange) l c h / 8%);
+    padding: 1rem 1.25rem;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .markdown-body :global(blockquote p) {
+    margin-bottom: 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--foreground);
+  }
+
+  /* Code / Inline code */
+  .markdown-body :global(code) {
+    font-family: monospace;
+    font-size: 0.85em;
+    background-color: var(--secondary);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  .markdown-body :global(pre) {
+    background-color: oklch(0.24 0.005 248); /* Dark code block */
+    color: oklch(0.85 0.01 248);
+    padding: 1.25rem;
+    border-radius: var(--radius);
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+    border: 1px solid oklch(0.928 0.022 80.7 / 10%);
+  }
+
+  .markdown-body :global(pre code) {
+    background: none;
+    border: none;
+    font-size: 0.875rem;
+    padding: 0;
+    color: inherit;
+  }
+</style>
+
+<script>
+  // Mobile Sidebar Toggle JS
+  const toggleBtn = document.getElementById('sidebar-toggle');
+  const sidebar = document.getElementById('docs-sidebar');
+
+  toggleBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    sidebar?.classList.toggle('open');
+  });
+
+  document.addEventListener('click', (e) => {
+    if (sidebar?.classList.contains('open') && !sidebar.contains(e.target as Node) && e.target !== toggleBtn) {
+      sidebar.classList.remove('open');
+    }
+  });
+
+  // Highlight active TOC item based on scroll position
+  const headings = Array.from(document.querySelectorAll('.markdown-body h2, .markdown-body h3'));
+  const tocLinks = Array.from(document.querySelectorAll('.toc-link'));
+
+  if (headings.length > 0 && tocLinks.length > 0) {
+    const observerOptions = {
+      root: null,
+      rootMargin: '-100px 0px -60% 0px',
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          tocLinks.forEach(link => {
+            if (link.getAttribute('href') === `#${id}`) {
+              link.classList.add('active');
+            } else {
+              link.classList.remove('active');
+            }
+          });
+        }
+      });
+    }, observerOptions);
+
+    headings.forEach(heading => observer.observe(heading));
+  }
+</script>

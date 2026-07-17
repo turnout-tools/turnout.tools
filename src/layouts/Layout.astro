@@ -1,0 +1,140 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Turnout — community and event toolbox",
+  description = "your (small) team's toolbox for running (big) communities and events"
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Primary Meta Tags -->
+    <title>{title}</title>
+    <meta name="title" content={title} />
+    <meta name="description" content={description} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+
+    <!-- Inline script to apply theme preference instantly to avoid FOUC -->
+    <script is:inline>
+      const getTheme = () => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      };
+
+      const theme = getTheme();
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="site-header">
+      <div class="container flex align-center justify-between">
+        <a href="/" class="logo">
+          Turnout<span class="logo-dot"></span>
+        </a>
+        <nav class="flex align-center gap-md">
+          <!-- Theme Toggle Button -->
+          <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle dark mode" style="margin-right: 0.5rem;">
+            <!-- Sun Icon -->
+            <svg class="sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+            </svg>
+            <!-- Moon Icon -->
+            <svg class="moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+            </svg>
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <slot />
+
+    <!-- Footer -->
+    <footer class="site-footer" style="padding: 3rem 0 2rem;">
+      <div class="container">
+        <div class="flex justify-between align-center flex-wrap gap-md">
+          <div class="logo-area">
+            <a href="/" class="logo">
+              Turnout<span class="logo-dot"></span>
+            </a>
+            <p style="font-size: 0.85rem; margin-top: 0.5rem; opacity: 0.6; margin-bottom: 0;">
+              your (small) team's toolbox for running (big) communities and events
+            </p>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--muted-foreground); margin-bottom: 0;">© {new Date().getFullYear()} Turnout. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Script to wire up theme toggler -->
+    <script>
+      const themeToggleBtn = document.getElementById('theme-toggle');
+      const sunIcon = themeToggleBtn?.querySelector('.sun') as HTMLElement;
+      const moonIcon = themeToggleBtn?.querySelector('.moon') as HTMLElement;
+
+      const updateIcons = (isDark: boolean) => {
+        if (sunIcon && moonIcon) {
+          if (isDark) {
+            sunIcon.style.display = 'block';
+            moonIcon.style.display = 'none';
+          } else {
+            sunIcon.style.display = 'none';
+            moonIcon.style.display = 'block';
+          }
+        }
+      };
+
+      // Set initial icon states
+      const isDarkInitial = document.documentElement.classList.contains('dark');
+      updateIcons(isDarkInitial);
+
+      themeToggleBtn?.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.contains('dark');
+        if (isDark) {
+          document.documentElement.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
+          updateIcons(false);
+        } else {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+          updateIcons(true);
+        }
+      });
+    </script>
+  </body>
+</html>
