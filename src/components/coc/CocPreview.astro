@@ -1,0 +1,150 @@
+---
+import CodeOfConductTemplate from './template.md';
+---
+
+<div class="coc-preview-document" id="coc-preview-content">
+  <CodeOfConductTemplate />
+</div>
+
+<style is:global>
+  .coc-preview-document {
+    font-family: var(--font-sans);
+    line-height: 1.7;
+    color: var(--foreground);
+  }
+
+  .coc-preview-document h1 {
+    font-family: var(--font-heading);
+    font-size: 2.25rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
+    text-align: center;
+  }
+
+  .coc-preview-document h2 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--primary);
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .coc-preview-document h3 {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: var(--foreground);
+  }
+
+  /* Subtitle byline spacing styling */
+  .coc-preview-document h2 + p {
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--muted-foreground);
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  /* Contact info styling */
+  .coc-preview-document h2 + p + p {
+    margin-top: 1rem;
+    text-align: center;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted-foreground);
+  }
+
+  .coc-preview-document h2 + p + p a {
+    text-decoration: underline;
+    transition: color 0.2s ease;
+  }
+
+  .coc-preview-document h2 + p + p a:hover {
+    color: var(--foreground);
+  }
+
+  .coc-preview-document ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .coc-preview-document ul li {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .coc-preview-document ul li:last-child {
+    margin-bottom: 0;
+  }
+
+  .coc-preview-document ol {
+    list-style-type: decimal;
+    padding-left: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  .coc-preview-document ol li {
+    margin-bottom: 0.75rem;
+  }
+
+  .coc-preview-document ol li:last-child {
+    margin-bottom: 0;
+  }
+
+  .coc-preview-document ol li::marker {
+    color: var(--primary);
+    font-weight: bold;
+  }
+
+  .coc-preview-document hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    opacity: 0.5;
+    margin: 2.5rem 0;
+  }
+
+  .coc-preview-document blockquote {
+    font-style: italic;
+    background-color: var(--secondary);
+    border: 1px solid var(--border);
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--radius);
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--muted-foreground);
+    line-height: 1.6;
+    margin: 2rem 0;
+  }
+
+  /* Footnotes / License styling at the bottom */
+  .coc-preview-document hr ~ p {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    margin: 0.25rem 0;
+    font-style: italic;
+  }
+
+  /* Variable Tokens Highlight style */
+  .coc-preview-document .variable-token.highlight {
+    background-color: oklch(from var(--primary) l c h / 12%);
+    color: var(--primary);
+    padding: 0.1rem 0.3rem;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+</style>

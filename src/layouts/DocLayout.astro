@@ -1,0 +1,247 @@
+---
+import Layout from './Layout.astro';
+import { sidebarConfig } from '../config/sidebar';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  entry: CollectionEntry<'docs'>;
+  headings: { depth: number; slug: string; text: string }[];
+  hideToc?: boolean;
+}
+
+const { entry, headings, hideToc = false } = Astro.props;
+const currentPath = Astro.url.pathname;
+const tocHeadings = hideToc ? [] : headings.filter(h => h.depth > 1 && h.depth <= 3);
+---
+
+<Layout title={`${entry.data.title} — Turnout Tools KB`} description={entry.data.description}>
+  <div class:list={['docs-wrapper', 'container', { 'hide-toc': hideToc }]}>
+    <aside class="docs-sidebar" id="docs-sidebar">
+      <nav class="sidebar-nav">
+        {sidebarConfig.map(group => (
+          <div class="sidebar-group">
+            <h4 class="sidebar-group-title">{group.label}</h4>
+            <ul class="sidebar-links">
+              {group.items.map(item => {
+                const isActive = currentPath.replace(/\/$/, '') === item.slug.replace(/\/$/, '');
+                return (
+                  <li>
+                    <a href={item.slug} class:list={['sidebar-link', { active: isActive }]}>
+                      {item.label}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </nav>
+    </aside>
+
+    <button class="mobile-sidebar-toggle" id="mobile-sidebar-toggle" aria-label="Toggle navigation menu">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
+      <span>Menu</span>
+    </button>
+
+    <main class="docs-content" data-pagefind-body>
+      <article class="markdown-content">
+        <h1 class="page-title">{entry.data.title}</h1>
+        {entry.data.description && <p class="page-description">{entry.data.description}</p>}
+        <slot />
+      </article>
+    </main>
+
+    {tocHeadings.length > 0 && (
+      <aside class="docs-toc">
+        <div class="toc-container">
+          <h4 class="toc-title">On this page</h4>
+          <ul class="toc-links">
+            {tocHeadings.map(h => (
+              <li class={`toc-depth-${h.depth}`}>
+                <a href={`#${h.slug}`} class="toc-link">
+                  {h.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </aside>
+    )}
+  </div>
+</Layout>
+
+<style>
+  .docs-wrapper {
+    display: grid;
+    grid-template-columns: 240px 1fr 200px;
+    gap: 3rem;
+    padding-top: 3rem;
+    padding-bottom: 6rem;
+    position: relative;
+  }
+  .docs-wrapper.hide-toc {
+    grid-template-columns: 240px 1fr;
+  }
+  .docs-sidebar {
+    position: sticky;
+    top: calc(var(--header-height) + 2rem);
+    height: calc(100vh - var(--header-height) - 4rem);
+    overflow-y: auto;
+    padding-right: 1.5rem;
+    border-right: 1px solid var(--border);
+  }
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+  .sidebar-group-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted-foreground);
+    margin-bottom: 0.6rem;
+  }
+  .sidebar-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .sidebar-link {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--foreground);
+    opacity: 0.75;
+    text-decoration: none;
+    padding: 0.2rem 0;
+    transition: all 0.2s ease;
+  }
+  .sidebar-link:hover {
+    opacity: 1;
+    color: var(--primary);
+    transform: translateX(2px);
+  }
+  .sidebar-link.active {
+    opacity: 1;
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .docs-content {
+    min-width: 0;
+  }
+  .page-title {
+    font-size: 2.25rem;
+    margin-bottom: 0.5rem;
+  }
+  .page-description {
+    font-size: 1.1rem;
+    color: var(--muted-foreground);
+    margin-bottom: 2.5rem;
+    line-height: 1.5;
+  }
+  .docs-toc {
+    position: sticky;
+    top: calc(var(--header-height) + 2rem);
+    height: calc(100vh - var(--header-height) - 4rem);
+    overflow-y: auto;
+  }
+  .toc-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted-foreground);
+    margin-bottom: 0.75rem;
+  }
+  .toc-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .toc-link {
+    font-size: 0.85rem;
+    color: var(--foreground);
+    opacity: 0.7;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+  .toc-link:hover {
+    opacity: 1;
+    color: var(--primary);
+  }
+  .toc-depth-3 {
+    padding-left: 0.75rem;
+  }
+  .mobile-sidebar-toggle {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 9999px;
+    box-shadow: var(--shadow-floating);
+    z-index: 100;
+    cursor: pointer;
+  }
+  @media (max-width: 1024px) {
+    .docs-wrapper {
+      grid-template-columns: 200px 1fr;
+    }
+    .docs-toc {
+      display: none;
+    }
+  }
+  @media (max-width: 768px) {
+    .docs-wrapper {
+      grid-template-columns: 1fr;
+      padding-top: 1.5rem;
+    }
+    .docs-sidebar {
+      display: none;
+      position: fixed;
+      top: var(--header-height);
+      left: 0;
+      width: 100%;
+      height: calc(100vh - var(--header-height));
+      background: var(--background);
+      z-index: 99;
+      padding: 2rem;
+      border-right: none;
+    }
+    .docs-sidebar.open {
+      display: block;
+    }
+    .mobile-sidebar-toggle {
+      display: flex;
+    }
+  }
+</style>
+
+<script>
+  const toggle = document.getElementById('mobile-sidebar-toggle');
+  const sidebar = document.getElementById('docs-sidebar');
+
+  toggle?.addEventListener('click', () => {
+    sidebar?.classList.toggle('open');
+    const isOpen = sidebar?.classList.contains('open');
+    if (toggle) {
+      toggle.querySelector('span')!.textContent = isOpen ? 'Close' : 'Menu';
+    }
+  });
+
+  const links = sidebar?.querySelectorAll('.sidebar-link');
+  links?.forEach(link => {
+    link.addEventListener('click', () => {
+      sidebar?.classList.remove('open');
+      if (toggle) {
+        toggle.querySelector('span')!.textContent = 'Menu';
+      }
+    });
+  });
+</script>
