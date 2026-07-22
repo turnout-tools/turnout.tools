@@ -28,20 +28,4 @@ Welcome to the Turnout Tools Knowledge Base. Here you will find guides, playbook
     <a href="/docs/code-of-conduct/" style="font-weight: 600; text-decoration: none; color: var(--primary); font-size: 0.9rem;">Get Template →</a>
   </div>
 
-  <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; background: var(--card); display: flex; flex-direction: column; justify-content: space-between;">
-    <div>
-      <h3 style="margin-top: 0; color: var(--primary);">📈 Ticketing Behavior</h3>
-      <p style="font-size: 0.95rem; margin-bottom: 1.5rem;">Analyze historical buying timelines in the Indian ecosystem to optimize your ticket release schedules.</p>
-    </div>
-    <a href="/docs/ticketing-advance-purchase/" style="font-weight: 600; text-decoration: none; color: var(--primary); font-size: 0.9rem;">See Purchase Curves →</a>
-  </div>
-
-  <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; background: var(--card); display: flex; flex-direction: column; justify-content: space-between;">
-    <div>
-      <h3 style="margin-top: 0; color: var(--primary);">💰 Economics & Strategy</h3>
-      <p style="font-size: 0.95rem; margin-bottom: 1.5rem;">Learn why revenue-sharing beats rentals, how early bird tiers boost turnout, and tactics for monetization.</p>
-    </div>
-    <a href="/docs/venue-revenue-share/" style="font-weight: 600; text-decoration: none; color: var(--primary); font-size: 0.9rem;">Read Strategy →</a>
-  </div>
-
 </div>

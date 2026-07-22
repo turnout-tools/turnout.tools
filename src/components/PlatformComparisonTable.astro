@@ -1,613 +1,685 @@
 ---
-import { platforms, comparisonData } from '../config/platform-comparison-data';
-import type { FeatureRow } from '../config/platform-comparison-data';
+import { platforms, comparisonData } from "../config/platform-comparison-data";
+import type { FeatureRow } from "../config/platform-comparison-data";
 
 interface FlatFeatureRow {
-  id: string;
-  parentId?: string;
-  name: string;
-  description?: string;
-  values: any;
-  depth: number;
-  hasSubFeatures: boolean;
+    id: string;
+    parentId?: string;
+    name: string;
+    description?: string;
+    values: any;
+    depth: number;
+    hasSubFeatures: boolean;
 }
 
 function flattenFeatures(
-  rows: FeatureRow[],
-  depth = 0,
-  parentId?: string
+    rows: FeatureRow[],
+    depth = 0,
+    parentId?: string,
 ): FlatFeatureRow[] {
-  let result: FlatFeatureRow[] = [];
-  rows.forEach((row, index) => {
-    const id = parentId ? `${parentId}-${index}` : `${index}`;
-    const hasSubFeatures = !!(row.subFeatures && row.subFeatures.length > 0);
-    result.push({
-      id,
-      parentId,
-      name: row.name,
-      description: row.description,
-      values: row.values || {},
-      depth,
-      hasSubFeatures
+    let result: FlatFeatureRow[] = [];
+    rows.forEach((row, index) => {
+        const id = parentId ? `${parentId}-${index}` : `${index}`;
+        const hasSubFeatures = !!(
+            row.subFeatures && row.subFeatures.length > 0
+        );
+        result.push({
+            id,
+            parentId,
+            name: row.name,
+            description: row.description,
+            values: row.values || {},
+            depth,
+            hasSubFeatures,
+        });
+        if (hasSubFeatures) {
+            result.push(...flattenFeatures(row.subFeatures!, depth + 1, id));
+        }
     });
-    if (hasSubFeatures) {
-      result.push(...flattenFeatures(row.subFeatures!, depth + 1, id));
-    }
-  });
-  return result;
+    return result;
 }
 
 const flatRows = flattenFeatures(comparisonData);
 ---
 
 <div class="comparison-controls">
-  <span class="controls-label">Compare Platforms:</span>
-  <div class="checkbox-group">
-    {platforms.map(platform => (
-      <label class="checkbox-label" for={`check-${platform.id}`}>
-        <input 
-          type="checkbox" 
-          id={`check-${platform.id}`} 
-          value={platform.id} 
-          checked 
-          class="platform-toggle"
-        />
-        {platform.faviconUrl && (
-          <img 
-            src={platform.faviconUrl} 
-            alt={`${platform.name} favicon`} 
-            class="platform-select-favicon"
-            loading="lazy"
-            width="14"
-            height="14"
-          />
-        )}
-        <span class="platform-label-text">{platform.name}</span>
-      </label>
-    ))}
-  </div>
+    <span class="controls-label">Select Platforms To Compare:</span>
+    <div class="checkbox-group">
+        {
+            platforms.map((platform) => (
+                <label class="checkbox-label" for={`check-${platform.id}`}>
+                    <input
+                        type="checkbox"
+                        id={`check-${platform.id}`}
+                        value={platform.id}
+                        checked
+                        class="platform-toggle"
+                    />
+                    {platform.faviconUrl && (
+                        <img
+                            src={platform.faviconUrl}
+                            alt={`${platform.name} favicon`}
+                            class="platform-select-favicon"
+                            loading="lazy"
+                            width="14"
+                            height="14"
+                        />
+                    )}
+                    <span class="platform-label-text">{platform.name}</span>
+                </label>
+            ))
+        }
+    </div>
 </div>
 
 <div class="comparison-matrix-container">
-  <table class="comparison-table" id="comparison-table">
-    <thead>
-      <tr>
-        <th class="feature-col">Feature / Category</th>
-        {platforms.map(platform => (
-          <th class="platform-col" data-platform={platform.id}>
-            <div class="platform-header-content">
-              {platform.faviconUrl && (
-                <img 
-                  src={platform.faviconUrl} 
-                  alt={`${platform.name} favicon`} 
-                  class="platform-favicon"
-                  loading="lazy"
-                  width="16"
-                  height="16"
-                />
-              )}
-              <span>{platform.name}</span>
-            </div>
-          </th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      {flatRows.map(row => {
-        const shouldSpan = row.hasSubFeatures && Object.keys(row.values).length === 0;
-        return (
-          <tr 
-            class:list={[
-              'comparison-row',
-              row.hasSubFeatures ? 'row-category-header' : 'row-sub-value'
-            ]}
-            data-row-id={row.id}
-            data-parent-id={row.parentId}
-            data-depth={row.depth}
-            data-collapsed={row.hasSubFeatures ? "false" : undefined}
-          >
-            <td 
-              class="feature-name" 
-              colspan={shouldSpan ? platforms.length + 1 : undefined} 
-              data-colspan-base={shouldSpan ? platforms.length + 1 : undefined}
-              style={`padding-left: ${1.25 + row.depth * 1.5}rem`}
-            >
-              <div class="feature-title-container">
-                <div class="feature-title-wrapper">
-                  {row.hasSubFeatures && (
-                    <button class="collapse-toggle-btn" aria-label="Toggle Section">
-                      <svg viewBox="0 0 24 24" class="chevron-icon"><path fill="currentColor" d="M8.59,16.59L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.59Z"/></svg>
-                    </button>
-                  )}
-                  {!row.hasSubFeatures && row.depth > 0 && (
-                    <span class="sub-indicator">↳</span>
-                  )}
-                  <span class="feature-title">{row.name}</span>
-                </div>
-                {row.description && (
-                  <span class={`feature-description ${row.depth > 0 && !row.hasSubFeatures ? 'sub-feature-description' : ''}`}>{row.description}</span>
-                )}
-              </div>
-            </td>
-            {!shouldSpan && platforms.map(platform => {
-              const val = row.values[platform.id] || { value: '—' };
-              return (
-                <td class:list={['cell-value', val.status]} data-platform={platform.id}>
-                  <div class="cell-content">
-                    <span class="value-text">{val.value}</span>
-                    {val.tooltip && (
-                      <div class="tooltip-container">
-                        <span class="info-icon info-icon-subtle" aria-label="Details">i</span>
-                        <div class="tooltip-content tooltip-right">{val.tooltip}</div>
-                      </div>
-                    )}
-                  </div>
-                </td>
-              );
-            })}
-          </tr>
-        );
-      })}
-    </tbody>
-  </table>
+    <table class="comparison-table" id="comparison-table">
+        <thead>
+            <tr>
+                <th class="feature-col">Feature / Category</th>
+                {
+                    platforms.map((platform) => (
+                        <th class="platform-col" data-platform={platform.id}>
+                            <div class="platform-header-content">
+                                {platform.faviconUrl && (
+                                    <img
+                                        src={platform.faviconUrl}
+                                        alt={`${platform.name} favicon`}
+                                        class="platform-favicon"
+                                        loading="lazy"
+                                        width="16"
+                                        height="16"
+                                    />
+                                )}
+                                <span>{platform.name}</span>
+                            </div>
+                        </th>
+                    ))
+                }
+            </tr>
+        </thead>
+        <tbody>
+            {
+                flatRows.map((row) => {
+                    const shouldSpan =
+                        row.hasSubFeatures &&
+                        Object.keys(row.values).length === 0;
+                    return (
+                        <tr
+                            class:list={[
+                                "comparison-row",
+                                row.hasSubFeatures
+                                    ? "row-category-header"
+                                    : "row-sub-value",
+                            ]}
+                            data-row-id={row.id}
+                            data-parent-id={row.parentId}
+                            data-depth={row.depth}
+                            data-collapsed={
+                                row.hasSubFeatures ? "false" : undefined
+                            }
+                        >
+                            <td
+                                class="feature-name"
+                                colspan={
+                                    shouldSpan
+                                        ? platforms.length + 1
+                                        : undefined
+                                }
+                                data-colspan-base={
+                                    shouldSpan
+                                        ? platforms.length + 1
+                                        : undefined
+                                }
+                                style={`padding-left: ${1.25 + row.depth * 1.5}rem`}
+                            >
+                                <div class="feature-title-container">
+                                    <div class="feature-title-wrapper">
+                                        {row.hasSubFeatures && (
+                                            <button
+                                                class="collapse-toggle-btn"
+                                                aria-label="Toggle Section"
+                                            >
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    class="chevron-icon"
+                                                >
+                                                    <path
+                                                        fill="currentColor"
+                                                        d="M8.59,16.59L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.59Z"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        )}
+                                        {!row.hasSubFeatures &&
+                                            row.depth > 0 && (
+                                                <span class="sub-indicator">
+                                                    ↳
+                                                </span>
+                                            )}
+                                        <span class="feature-title">
+                                            {row.name}
+                                        </span>
+                                    </div>
+                                    {row.description && (
+                                        <span
+                                            class={`feature-description ${row.depth > 0 && !row.hasSubFeatures ? "sub-feature-description" : ""}`}
+                                        >
+                                            {row.description}
+                                        </span>
+                                    )}
+                                </div>
+                            </td>
+                            {!shouldSpan &&
+                                platforms.map((platform) => {
+                                    const val = row.values[platform.id] || {
+                                        value: "—",
+                                    };
+                                    return (
+                                        <td
+                                            class:list={[
+                                                "cell-value",
+                                                val.status,
+                                            ]}
+                                            data-platform={platform.id}
+                                        >
+                                            <div class="cell-content">
+                                                <span class="value-text">
+                                                    {val.value}
+                                                </span>
+                                                {val.tooltip && (
+                                                    <div class="tooltip-container">
+                                                        <span
+                                                            class="info-icon info-icon-subtle"
+                                                            aria-label="Details"
+                                                        >
+                                                            i
+                                                        </span>
+                                                        <div class="tooltip-content tooltip-right">
+                                                            {val.tooltip}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </td>
+                                    );
+                                })}
+                        </tr>
+                    );
+                })
+            }
+        </tbody>
+    </table>
 </div>
 
 <script>
-  const toggles = document.querySelectorAll('.platform-toggle') as NodeListOf<HTMLInputElement>;
-  const categoryHeaders = document.querySelectorAll('tr.row-category-header');
-  
-  function updateTableColumns() {
-    // Determine which platforms are active
-    const activePlatforms = new Set<string>();
-    toggles.forEach(toggle => {
-      if (toggle.checked) {
-        activePlatforms.add(toggle.value);
-      }
+    const toggles = document.querySelectorAll(
+        ".platform-toggle",
+    ) as NodeListOf<HTMLInputElement>;
+    const categoryHeaders = document.querySelectorAll("tr.row-category-header");
+
+    function updateTableColumns() {
+        // Determine which platforms are active
+        const activePlatforms = new Set<string>();
+        toggles.forEach((toggle) => {
+            if (toggle.checked) {
+                activePlatforms.add(toggle.value);
+            }
+        });
+
+        // Toggle column visibility
+        const cells = document.querySelectorAll("[data-platform]");
+        cells.forEach((cell) => {
+            const platformId = cell.getAttribute("data-platform");
+            if (platformId) {
+                if (activePlatforms.has(platformId)) {
+                    (cell as HTMLElement).style.display = "";
+                } else {
+                    (cell as HTMLElement).style.display = "none";
+                }
+            }
+        });
+
+        // Update colspan on category header rows that actually span the full width
+        const categoryNames = document.querySelectorAll(
+            "tr.row-category-header td.feature-name[data-colspan-base]",
+        );
+        categoryNames.forEach((cell) => {
+            // 1 (for feature name column) + count of active platforms
+            (cell as HTMLTableCellElement).colSpan = 1 + activePlatforms.size;
+        });
+    }
+
+    function updateRowVisibility() {
+        const rows = Array.from(
+            document.querySelectorAll("tr.comparison-row"),
+        ) as HTMLElement[];
+
+        // Build set of all collapsed row IDs
+        const collapsedIds = new Set<string>();
+        rows.forEach((row) => {
+            if (row.getAttribute("data-collapsed") === "true") {
+                collapsedIds.add(row.getAttribute("data-row-id") || "");
+            }
+        });
+
+        rows.forEach((row) => {
+            const rowId = row.getAttribute("data-row-id") || "";
+            const parentId = row.getAttribute("data-parent-id");
+
+            // A row is hidden if any of its ancestors are collapsed.
+            // An ancestor collapsed ID will match the prefix of the current row ID.
+            let isHiddenByAncestor = false;
+            if (parentId) {
+                for (const collapsedId of collapsedIds) {
+                    if (rowId.startsWith(collapsedId + "-")) {
+                        isHiddenByAncestor = true;
+                        break;
+                    }
+                }
+            }
+
+            if (isHiddenByAncestor) {
+                row.style.display = "none";
+            } else {
+                row.style.display = "";
+            }
+        });
+    }
+
+    // Bind collapse toggling
+    categoryHeaders.forEach((header) => {
+        header.addEventListener("click", (e) => {
+            const target = e.target as HTMLElement;
+            // Do not toggle if clicking tooltip triggers or buttons inside values cells
+            if (target.closest(".tooltip-container")) {
+                return;
+            }
+
+            const collapsed = header.getAttribute("data-collapsed") === "true";
+            header.setAttribute("data-collapsed", collapsed ? "false" : "true");
+            updateRowVisibility();
+        });
     });
 
-    // Toggle column visibility
-    const cells = document.querySelectorAll('[data-platform]');
-    cells.forEach(cell => {
-      const platformId = cell.getAttribute('data-platform');
-      if (platformId) {
-        if (activePlatforms.has(platformId)) {
-          (cell as HTMLElement).style.display = '';
-        } else {
-          (cell as HTMLElement).style.display = 'none';
-        }
-      }
+    toggles.forEach((toggle) => {
+        toggle.addEventListener("change", updateTableColumns);
     });
 
-    // Update colspan on category header rows that actually span the full width
-    const categoryNames = document.querySelectorAll('tr.row-category-header td.feature-name[data-colspan-base]');
-    categoryNames.forEach(cell => {
-      // 1 (for feature name column) + count of active platforms
-      (cell as HTMLTableCellElement).colSpan = 1 + activePlatforms.size;
-    });
-  }
-
-  function updateRowVisibility() {
-    const rows = Array.from(document.querySelectorAll('tr.comparison-row')) as HTMLElement[];
-    
-    // Build set of all collapsed row IDs
-    const collapsedIds = new Set<string>();
-    rows.forEach(row => {
-      if (row.getAttribute('data-collapsed') === 'true') {
-        collapsedIds.add(row.getAttribute('data-row-id') || '');
-      }
-    });
-
-    rows.forEach(row => {
-      const rowId = row.getAttribute('data-row-id') || '';
-      const parentId = row.getAttribute('data-parent-id');
-      
-      // A row is hidden if any of its ancestors are collapsed.
-      // An ancestor collapsed ID will match the prefix of the current row ID.
-      let isHiddenByAncestor = false;
-      if (parentId) {
-        for (const collapsedId of collapsedIds) {
-          if (rowId.startsWith(collapsedId + '-')) {
-            isHiddenByAncestor = true;
-            break;
-          }
-        }
-      }
-
-      if (isHiddenByAncestor) {
-        row.style.display = 'none';
-      } else {
-        row.style.display = '';
-      }
-    });
-  }
-
-  // Bind collapse toggling
-  categoryHeaders.forEach(header => {
-    header.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      // Do not toggle if clicking tooltip triggers or buttons inside values cells
-      if (target.closest('.tooltip-container')) {
-        return;
-      }
-      
-      const collapsed = header.getAttribute('data-collapsed') === 'true';
-      header.setAttribute('data-collapsed', collapsed ? 'false' : 'true');
-      updateRowVisibility();
-    });
-  });
-
-  toggles.forEach(toggle => {
-    toggle.addEventListener('change', updateTableColumns);
-  });
-
-  // Run initial configuration
-  updateTableColumns();
-  updateRowVisibility();
+    // Run initial configuration
+    updateTableColumns();
+    updateRowVisibility();
 </script>
 
 <style>
-  .comparison-controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: var(--card, #1e1e2e);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-  }
+    .comparison-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: var(--card, #1e1e2e);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+    }
 
-  .controls-label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--muted-foreground);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
+    .controls-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--muted-foreground);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
 
-  .checkbox-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
+    .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
 
-  .checkbox-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-    cursor: pointer;
-    user-select: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--border);
-    transition: all 0.2s ease;
-    opacity: 0.6;
-  }
+    .checkbox-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        user-select: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border);
+        transition: all 0.2s ease;
+        opacity: 0.6;
+    }
 
-  .checkbox-label:hover {
-    background: rgba(var(--primary-rgb, 124, 58, 237), 0.05);
-    border-color: var(--primary);
-    opacity: 0.85;
-  }
+    .checkbox-label:hover {
+        background: rgba(var(--primary-rgb, 124, 58, 237), 0.05);
+        border-color: var(--primary);
+        opacity: 0.85;
+    }
 
-  .checkbox-label:has(.platform-toggle:checked) {
-    background: rgba(var(--primary-rgb, 124, 58, 237), 0.08);
-    border-color: var(--primary);
-    opacity: 1;
-    box-shadow: 0 0 0 1px rgba(var(--primary-rgb, 124, 58, 237), 0.2);
-  }
+    .checkbox-label:has(.platform-toggle:checked) {
+        background: rgba(var(--primary-rgb, 124, 58, 237), 0.08);
+        border-color: var(--primary);
+        opacity: 1;
+        box-shadow: 0 0 0 1px rgba(var(--primary-rgb, 124, 58, 237), 0.2);
+    }
 
-  .platform-toggle {
-    display: none;
-  }
+    .platform-toggle {
+        display: none;
+    }
 
-  .platform-select-favicon {
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
-    object-fit: contain;
-    filter: grayscale(20%);
-    transition: filter 0.2s ease;
-  }
+    .platform-select-favicon {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        object-fit: contain;
+        filter: grayscale(20%);
+        transition: filter 0.2s ease;
+    }
 
-  .checkbox-label:has(.platform-toggle:checked) .platform-select-favicon {
-    filter: none;
-  }
+    .checkbox-label:has(.platform-toggle:checked) .platform-select-favicon {
+        filter: none;
+    }
 
-  .platform-label-text {
-    font-weight: 500;
-  }
+    .platform-label-text {
+        font-weight: 500;
+    }
 
-  .comparison-matrix-container {
-    width: 100%;
-    overflow-x: auto;
-    margin: 2rem 0;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background: var(--card, #1e1e2e);
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2);
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-  }
+    .comparison-matrix-container {
+        width: 100%;
+        overflow-x: auto;
+        margin: 2rem 0;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--card, #1e1e2e);
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2);
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+    }
 
-  .comparison-matrix-container::-webkit-scrollbar {
-    height: 6px;
-  }
+    .comparison-matrix-container::-webkit-scrollbar {
+        height: 6px;
+    }
 
-  .comparison-matrix-container::-webkit-scrollbar-track {
-    background: transparent;
-  }
+    .comparison-matrix-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
 
-  .comparison-matrix-container::-webkit-scrollbar-thumb {
-    background-color: var(--border);
-    border-radius: 3px;
-  }
+    .comparison-matrix-container::-webkit-scrollbar-thumb {
+        background-color: var(--border);
+        border-radius: 3px;
+    }
 
-  .comparison-matrix-container::-webkit-scrollbar-thumb:hover {
-    background-color: var(--primary);
-  }
+    .comparison-matrix-container::-webkit-scrollbar-thumb:hover {
+        background-color: var(--primary);
+    }
 
-  .comparison-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    font-size: 0.9rem;
-  }
+    .comparison-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.9rem;
+    }
 
-  .comparison-table th,
-  .comparison-table td {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .comparison-table th {
-    font-weight: 600;
-    color: var(--muted-foreground);
-    background: rgba(0, 0, 0, 0.1);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .feature-col {
-    min-width: 240px;
-    width: 35%;
-  }
-
-  .platform-col {
-    text-align: center;
-    font-weight: 700;
-  }
-
-  .platform-header-content {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    vertical-align: middle;
-  }
-
-  .platform-favicon {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    object-fit: contain;
-    background: transparent;
-  }
-
-  /* Category / Parent Rows */
-  .row-category-header {
-    background: rgba(var(--primary-rgb, 124, 58, 237), 0.03);
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .row-category-header:hover {
-    background: rgba(var(--primary-rgb, 124, 58, 237), 0.07);
-  }
-
-  .row-category-header .feature-name {
-    font-weight: 700;
-    color: var(--primary);
-    font-size: 0.95rem;
-    letter-spacing: 0.02em;
-    border-bottom: 1px solid rgba(var(--primary-rgb, 124, 58, 237), 0.15);
-  }
-
-  /* Indented Sub-rows & indicator styling */
-  .sub-indicator {
-    color: var(--muted-foreground);
-    margin-right: 0.25rem;
-    opacity: 0.6;
-    font-weight: normal;
-  }
-
-  .feature-title-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-  }
-
-  .feature-title-wrapper {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .feature-title {
-    font-weight: 600;
-  }
-
-  .row-category-header .feature-title {
-    font-weight: 700;
-  }
-
-  .feature-description {
-    font-size: 0.75rem;
-    font-weight: 400;
-    color: var(--muted-foreground);
-    opacity: 0.8;
-    line-height: 1.35;
-    white-space: normal;
-  }
-
-  .sub-feature-description {
-    padding-left: 1.25rem;
-  }
-
-  /* Collapse Buttons */
-  .collapse-toggle-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    margin: 0;
-    color: var(--muted-foreground);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    transition: background-color 0.2s, color 0.2s;
-  }
-
-  .collapse-toggle-btn:hover {
-    background-color: rgba(var(--primary-rgb, 124, 58, 237), 0.1);
-    color: var(--primary);
-  }
-
-  .chevron-icon {
-    width: 18px;
-    height: 18px;
-    transform: rotate(90deg);
-    transition: transform 0.2s ease;
-  }
-
-  [data-collapsed="true"] .chevron-icon {
-    transform: rotate(0deg);
-  }
-
-  /* Cell Value Custom Classes */
-  .cell-value {
-    text-align: center;
-    font-weight: 500;
-  }
-
-  .cell-content {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    width: 100%;
-  }
-
-  .value-text {
-    font-size: 0.9rem;
-  }
-
-  .positive {
-    color: #10b981;
-    background: rgba(16, 185, 129, 0.06);
-  }
-
-  .negative {
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.06);
-  }
-
-  .warning {
-    color: #f59e0b;
-    background: rgba(245, 158, 11, 0.06);
-  }
-
-  .neutral {
-    color: var(--foreground);
-    opacity: 0.85;
-  }
-
-  .tooltip-container {
-    position: relative;
-    display: inline-flex;
-    cursor: help;
-  }
-
-  .info-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--muted);
-    color: var(--muted-foreground);
-    font-size: 0.65rem;
-    font-weight: 700;
-    transition: all 0.2s ease;
-  }
-
-  .info-icon-subtle {
-    opacity: 0.6;
-    width: 14px;
-    height: 14px;
-    font-size: 0.6rem;
-    font-family: serif;
-  }
-
-  .info-icon:hover {
-    background: var(--primary);
-    color: var(--primary-foreground);
-    opacity: 1;
-  }
-
-  .tooltip-content {
-    visibility: hidden;
-    position: absolute;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #0f0f15;
-    color: #ffffff;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    width: 220px;
-    font-size: 0.75rem;
-    line-height: 1.4;
-    text-align: left;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    border: 1px solid var(--border);
-    z-index: 50;
-    opacity: 0;
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    pointer-events: none;
-  }
-
-  .tooltip-right {
-    left: auto;
-    right: 0;
-    transform: none;
-  }
-
-  .tooltip-container:hover .tooltip-content {
-    visibility: visible;
-    opacity: 1;
-    transform: translateX(-50%) translateY(-2px);
-  }
-
-  .tooltip-container:hover .tooltip-right {
-    transform: translateY(-2px);
-  }
-
-  @media (max-width: 768px) {
     .comparison-table th,
     .comparison-table td {
-      padding: 0.75rem 0.5rem;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border);
     }
+
+    .comparison-table th {
+        font-weight: 600;
+        color: var(--muted-foreground);
+        background: rgba(0, 0, 0, 0.1);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .feature-col {
+        min-width: 240px;
+        width: 35%;
+    }
+
+    .platform-col {
+        text-align: center;
+        font-weight: 700;
+    }
+
+    .platform-header-content {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        vertical-align: middle;
+    }
+
+    .platform-favicon {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        object-fit: contain;
+        background: transparent;
+    }
+
+    /* Category / Parent Rows */
+    .row-category-header {
+        background: rgba(var(--primary-rgb, 124, 58, 237), 0.03);
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .row-category-header:hover {
+        background: rgba(var(--primary-rgb, 124, 58, 237), 0.07);
+    }
+
+    .row-category-header .feature-name {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 0.95rem;
+        letter-spacing: 0.02em;
+        border-bottom: 1px solid rgba(var(--primary-rgb, 124, 58, 237), 0.15);
+    }
+
+    /* Indented Sub-rows & indicator styling */
+    .sub-indicator {
+        color: var(--muted-foreground);
+        margin-right: 0.25rem;
+        opacity: 0.6;
+        font-weight: normal;
+    }
+
+    .feature-title-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .feature-title-wrapper {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .feature-title {
+        font-weight: 600;
+    }
+
+    .row-category-header .feature-title {
+        font-weight: 700;
+    }
+
+    .feature-description {
+        font-size: 0.75rem;
+        font-weight: 400;
+        color: var(--muted-foreground);
+        opacity: 0.8;
+        line-height: 1.35;
+        white-space: normal;
+    }
+
+    .sub-feature-description {
+        padding-left: 1.25rem;
+    }
+
+    /* Collapse Buttons */
+    .collapse-toggle-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        color: var(--muted-foreground);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        transition:
+            background-color 0.2s,
+            color 0.2s;
+    }
+
+    .collapse-toggle-btn:hover {
+        background-color: rgba(var(--primary-rgb, 124, 58, 237), 0.1);
+        color: var(--primary);
+    }
+
+    .chevron-icon {
+        width: 18px;
+        height: 18px;
+        transform: rotate(90deg);
+        transition: transform 0.2s ease;
+    }
+
+    [data-collapsed="true"] .chevron-icon {
+        transform: rotate(0deg);
+    }
+
+    /* Cell Value Custom Classes */
+    .cell-value {
+        text-align: center;
+        font-weight: 500;
+    }
+
+    .cell-content {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        width: 100%;
+    }
+
     .value-text {
-      font-size: 0.8rem;
+        font-size: 0.9rem;
     }
-  }
+
+    .positive {
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.06);
+    }
+
+    .negative {
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.06);
+    }
+
+    .warning {
+        color: #f59e0b;
+        background: rgba(245, 158, 11, 0.06);
+    }
+
+    .neutral {
+        color: var(--foreground);
+        opacity: 0.85;
+    }
+
+    .tooltip-container {
+        position: relative;
+        display: inline-flex;
+        cursor: help;
+    }
+
+    .info-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--muted);
+        color: var(--muted-foreground);
+        font-size: 0.65rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+    }
+
+    .info-icon-subtle {
+        opacity: 0.6;
+        width: 14px;
+        height: 14px;
+        font-size: 0.6rem;
+        font-family: serif;
+    }
+
+    .info-icon:hover {
+        background: var(--primary);
+        color: var(--primary-foreground);
+        opacity: 1;
+    }
+
+    .tooltip-content {
+        visibility: hidden;
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #0f0f15;
+        color: #ffffff;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        width: 220px;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        text-align: left;
+        box-shadow:
+            0 10px 15px -3px rgba(0, 0, 0, 0.3),
+            0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border);
+        z-index: 50;
+        opacity: 0;
+        transition:
+            opacity 0.25s ease,
+            transform 0.25s ease;
+        pointer-events: none;
+    }
+
+    .tooltip-right {
+        left: auto;
+        right: 0;
+        transform: none;
+    }
+
+    .tooltip-container:hover .tooltip-content {
+        visibility: visible;
+        opacity: 1;
+        transform: translateX(-50%) translateY(-2px);
+    }
+
+    .tooltip-container:hover .tooltip-right {
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .comparison-table th,
+        .comparison-table td {
+            padding: 0.75rem 0.5rem;
+        }
+        .value-text {
+            font-size: 0.8rem;
+        }
+    }
 </style>

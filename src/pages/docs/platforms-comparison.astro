@@ -1,31 +1,34 @@
 ---
-import DocLayout from '../../layouts/DocLayout.astro';
-import PlatformComparisonTable from '../../components/PlatformComparisonTable.astro';
-import ComparisonDetailContent, { getHeadings } from '../../content/docs/platforms-comparison.md';
+import DocLayout from "../../layouts/DocLayout.astro";
+import PlatformComparisonTable from "../../components/PlatformComparisonTable.astro";
+import ComparisonDetailContent, {
+    getHeadings,
+} from "../../content/docs/platforms-comparison.md";
 
 const entry = {
-  data: {
-    title: 'India Event Discovery Platforms Feature Comparison',
-    description: 'Comparing feature sets across different event discovery platforms in India.',
-  }
+    data: {
+        title: "Event Ticketing Platforms Feature Comparison",
+        description:
+            "Comparing feature sets across different event ticketing platforms.",
+    },
 };
 
 const fileHeadings = getHeadings();
 
 // Prepend or append specific TOC items since the table is injected dynamically
 const headings = [
-  { depth: 2, slug: 'comparison-matrix', text: 'Comparison Matrix' },
-  ...fileHeadings.filter(h => h.slug !== 'comparison-matrix')
+    { depth: 2, slug: "comparison-matrix", text: "Comparison Matrix" },
+    ...fileHeadings.filter((h) => h.slug !== "comparison-matrix"),
 ];
 ---
 
 <DocLayout entry={entry as any} headings={headings} hideToc={true}>
-  <p>Comparing event discovery platforms features in India.</p>
+    <h2 id="comparison-matrix">Comparison Matrix</h2>
+    <PlatformComparisonTable />
 
-  <h2 id="comparison-matrix">Comparison Matrix</h2>
-  <PlatformComparisonTable />
+    <hr
+        style="margin: 3rem 0; border: 0; border-top: 1px solid var(--border);"
+    />
 
-  <hr style="margin: 3rem 0; border: 0; border-top: 1px solid var(--border);" />
-
-  <ComparisonDetailContent />
+    <ComparisonDetailContent />
 </DocLayout>

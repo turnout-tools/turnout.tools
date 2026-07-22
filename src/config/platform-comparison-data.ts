@@ -118,59 +118,7 @@ export const comparisonData: FeatureRow[] = [
         name: 'Organizer Broadcasts',
         description: 'Sending announcements, emails, or updates directly to all registered attendees.',
         values: {}
-      },
-      {
-        name: 'Tracking Pixels & Analytics',
-        description: 'Built-in integrations for Meta Pixel, Google Analytics, and custom tracking codes to measure conversions.',
-        values: {}
       }
     ]
   },
-  {
-    name: 'Payouts, Fees & Financials',
-    values: {},
-    subFeatures: [
-      {
-        name: 'Platform Commission Fee',
-        description: 'The base service fee charged by the platform per ticket sale.',
-        values: {}
-      },
-      {
-        name: 'Payout Frequency',
-        description: 'The speed at which ticket revenues are deposited into the organizer\'s bank account (rolling vs. post-event).',
-        values: {}
-      },
-      {
-        name: 'International Card Support',
-        description: 'Accepting global credit cards and multi-currency payments natively.',
-        values: {}
-      },
-      {
-        name: 'Refund & Ticket Transfer Tools',
-        description: 'Built-in tools for handling customer cancellations, issuing partial/full refunds, or transferring tickets.',
-        values: {}
-      }
-    ]
-  },
-  {
-    name: 'Integrations & Developer Tools',
-    values: {},
-    subFeatures: [
-      {
-        name: 'Public Developer API',
-        description: 'Fully documented API to programmatically fetch event, attendee, and ticket data.',
-        values: {}
-      },
-      {
-        name: 'Webhooks',
-        description: 'Real-time event notifications (e.g., order created, checked-in) to sync with external databases.',
-        values: {}
-      },
-      {
-        name: 'Native Third-Party Integrations',
-        description: 'Integrations with Zapier, Slack, Discord, Google Sheets, or CRMs.',
-        values: {}
-      }
-    ]
-  }
 ];
