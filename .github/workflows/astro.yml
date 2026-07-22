@@ -45,7 +45,7 @@ jobs:
         id: pages
         uses: actions/configure-pages@v6
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
         working-directory: ${{ env.BUILD_PATH }}
       - name: Build with Astro
         run: |
