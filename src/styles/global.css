@@ -1,3 +1,6 @@
+@import "@fontsource-variable/public-sans";
+@import "@fontsource-variable/fraunces";
+
 /* ═══════════════════════════════════════════════════════════════
    TURNOUT DESIGN SYSTEM & THEME
    Color palette in OKLCH for perceptual uniformity.
@@ -6,8 +9,8 @@
 
 :root {
   /* --- Fonts --- */
-  --font-heading: "Fraunces", Georgia, serif;
-  --font-sans: "Public Sans", system-ui, -apple-system, sans-serif;
+  --font-heading: "Fraunces Variable", Georgia, serif;
+  --font-sans: "Public Sans Variable", system-ui, -apple-system, sans-serif;
 
   /* --- Turnout Brand Colors (Global reference) --- */
   --brand-red: oklch(0.618 0.17 33.1);
@@ -25,27 +28,27 @@
   --background: var(--brand-cream);
   --foreground: var(--brand-black);
 
-  --card: oklch(0.95 0.015 80.7);
+  --card: oklch(0.965 0.012 80.7);
   --card-foreground: var(--brand-black);
-  --popover: oklch(0.96 0.015 80.7);
+  --popover: oklch(0.965 0.012 80.7);
   --popover-foreground: var(--brand-black);
 
   --primary: var(--brand-red);
   --primary-foreground: oklch(0.985 0.005 80.7);
 
-  --secondary: oklch(0.88 0.018 80.7);
+  --secondary: oklch(0.908 0.015 80.7);
   --secondary-foreground: var(--brand-black);
 
-  --muted: oklch(0.88 0.018 80.7);
-  --muted-foreground: oklch(0.55 0.01 248);
+  --muted: oklch(0.908 0.015 80.7);
+  --muted-foreground: oklch(0.52 0.01 248);
 
-  --accent: oklch(0.88 0.018 80.7);
+  --accent: oklch(0.908 0.015 80.7);
   --accent-foreground: var(--brand-black);
 
-  --border: oklch(0.83 0.02 80.7);
+  --border: oklch(0.88 0.015 80.7);
   --ring: var(--brand-red);
   
-  --radius: 12px;
+  --radius: 0.625rem;
   --max-width: 1200px;
   --header-height: 72px;
   
@@ -55,54 +58,26 @@
   --shadow-elevated: 0 8px 40px -12px oklch(0 0 0 / 14%), 0 4px 6px -4px oklch(0 0 0 / 5%), 0 0 0 1px oklch(0 0 0 / 2%);
 }
 
-/* --- Dark Theme --- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: oklch(0.215 0.012 248);
-    --foreground: oklch(0.928 0.022 80.7);
-
-    --card: oklch(0.25 0.012 248);
-    --card-foreground: oklch(0.928 0.022 80.7);
-    --popover: oklch(0.25 0.012 248);
-    --popover-foreground: oklch(0.928 0.022 80.7);
-
-    --primary: oklch(0.668 0.185 33.1);
-    --primary-foreground: oklch(0.985 0.005 80.7);
-
-    --secondary: oklch(0.28 0.012 248);
-    --secondary-foreground: oklch(0.928 0.022 80.7);
-
-    --muted: oklch(0.28 0.012 248);
-    --muted-foreground: oklch(0.65 0.01 248);
-
-    --accent: oklch(0.28 0.012 248);
-    --accent-foreground: oklch(0.928 0.022 80.7);
-
-    --border: oklch(0.928 0.022 80.7 / 12%);
-    --ring: oklch(0.668 0.185 33.1);
-  }
-}
-
 /* Explicit class-based dark override if toggled */
 html.dark {
   --background: oklch(0.215 0.012 248);
   --foreground: oklch(0.928 0.022 80.7);
 
-  --card: oklch(0.25 0.012 248);
+  --card: oklch(0.26 0.012 248);
   --card-foreground: oklch(0.928 0.022 80.7);
-  --popover: oklch(0.25 0.012 248);
+  --popover: oklch(0.26 0.012 248);
   --popover-foreground: oklch(0.928 0.022 80.7);
 
   --primary: oklch(0.668 0.185 33.1);
   --primary-foreground: oklch(0.985 0.005 80.7);
 
-  --secondary: oklch(0.28 0.012 248);
+  --secondary: oklch(0.31 0.012 248);
   --secondary-foreground: oklch(0.928 0.022 80.7);
 
-  --muted: oklch(0.28 0.012 248);
+  --muted: oklch(0.31 0.012 248);
   --muted-foreground: oklch(0.65 0.01 248);
 
-  --accent: oklch(0.28 0.012 248);
+  --accent: oklch(0.31 0.012 248);
   --accent-foreground: oklch(0.928 0.022 80.7);
 
   --border: oklch(0.928 0.022 80.7 / 12%);
@@ -501,27 +476,158 @@ a:hover {
   line-height: 1.5;
 }
 
-/* Theme Toggle */
-.theme-toggle-btn {
-  background: none;
+/* Theme Switcher in Footer */
+.theme-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: var(--secondary);
+  padding: 4px;
+  border-radius: 8px;
   border: 1px solid var(--border);
-  color: var(--foreground);
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius);
+}
+
+.theme-switcher-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted-foreground);
+  padding: 6px;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  width: 32px;
+  height: 32px;
 }
 
-.theme-toggle-btn:hover {
-  background-color: var(--secondary);
+.theme-switcher-btn:hover {
+  color: var(--foreground);
 }
 
-.theme-toggle-btn svg {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
+.theme-switcher-btn.active {
+  background-color: var(--background);
+  color: var(--foreground);
+  box-shadow: var(--shadow-soft);
 }
+
+.theme-switcher-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MARKDOWN DOCUMENT BODY STYLING
+   ═══════════════════════════════════════════════════════════════ */
+.markdown-content {
+  font-family: var(--font-sans);
+  color: var(--foreground);
+  line-height: 1.7;
+}
+.markdown-content h2 {
+  font-size: 1.6rem;
+  margin-top: 2rem;
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.3rem;
+  color: var(--foreground);
+  font-family: var(--font-heading);
+}
+.markdown-content h3 {
+  font-size: 1.25rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.6rem;
+  color: var(--foreground);
+  font-family: var(--font-heading);
+}
+.markdown-content p {
+  margin-bottom: 1.25rem;
+  opacity: 0.95;
+}
+.markdown-content ul, .markdown-content ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+}
+.markdown-content li {
+  margin-bottom: 0.4rem;
+}
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.markdown-content th {
+  background: var(--secondary);
+  color: var(--foreground);
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.markdown-content td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.markdown-content tr:last-child td {
+  border-bottom: none;
+}
+.markdown-content tr:nth-child(even) {
+  background: oklch(from var(--card) l c h / 40%);
+}
+
+/* Native Markdown blockquotes (GFM alert callouts) */
+.markdown-content blockquote {
+  margin: 1.5rem 0;
+  padding: 0.8rem 1.25rem;
+  border-left: 4px solid var(--border);
+  background: var(--card);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.markdown-content blockquote p {
+  margin-bottom: 0;
+  font-size: 0.95rem;
+}
+.markdown-content blockquote p strong:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+/* Code container elements */
+.markdown-content pre {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  font-size: 0.875rem;
+  background-color: var(--card) !important;
+  box-shadow: var(--shadow-soft);
+}
+.markdown-content code {
+  font-family: monospace;
+  font-size: 0.9em;
+  background: var(--secondary);
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+}
+.markdown-content pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+

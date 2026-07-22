@@ -1,0 +1,21 @@
+---
+import DocLayout from '../../layouts/DocLayout.astro';
+import CocGenerator from '../../components/coc/CocGenerator.astro';
+import CodeOfConductContent, { getHeadings } from '../../content/docs/_code-of-conduct.md';
+
+const entry = {
+  data: {
+    title: 'Code of Conduct',
+    description: 'A starting point for drafting a community code of conduct',
+  }
+};
+
+const headings = getHeadings();
+---
+
+<DocLayout entry={entry as any} headings={headings}>
+  <CodeOfConductContent />
+  <div style="margin-top: 3rem;">
+    <CocGenerator />
+  </div>
+</DocLayout>
