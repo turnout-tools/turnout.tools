@@ -1,193 +1,286 @@
 ---
-import '../styles/global.css';
-import Search from '../components/Search.astro';
+import "../styles/global.css";
+import Search from "../components/Search.astro";
 
 interface Props {
-  title?: string;
-  description?: string;
+    title?: string;
+    description?: string;
 }
 
 const {
-  title = "Turnout — community and event toolbox",
-  description = "your (small) team's toolbox for running (big) communities and events"
+    title = "Turnout — community and event toolbox",
+    description = "your (small) team's toolbox for running (big) communities and events",
 } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="generator" content={Astro.generator} />
 
-    <!-- Primary Meta Tags -->
-    <title>{title}</title>
-    <meta name="title" content={title} />
-    <meta name="description" content={description} />
+        <!-- Primary Meta Tags -->
+        <title>{title}</title>
+        <meta name="title" content={title} />
+        <meta name="description" content={description} />
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:title" content={title} />
-    <meta property="twitter:description" content={description} />
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:title" content={title} />
+        <meta property="twitter:description" content={description} />
 
-    <!-- Inline script to apply theme preference instantly to avoid FOUC -->
-    <script is:inline>
-      (() => {
-        const getTheme = () => {
-          if (typeof localStorage !== 'undefined' && localStorage.getItem('turnout-theme')) {
-            return localStorage.getItem('turnout-theme');
-          }
-          return 'system';
-        };
+        <!-- Inline script to apply theme preference instantly to avoid FOUC -->
+        <script is:inline>
+            (() => {
+                const getTheme = () => {
+                    if (
+                        typeof localStorage !== "undefined" &&
+                        localStorage.getItem("turnout-theme")
+                    ) {
+                        return localStorage.getItem("turnout-theme");
+                    }
+                    return "system";
+                };
 
-        const resolveTheme = (theme) => {
-          if (theme !== 'system') return theme;
-          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        };
+                const resolveTheme = (theme) => {
+                    if (theme !== "system") return theme;
+                    return window.matchMedia("(prefers-color-scheme: dark)")
+                        .matches
+                        ? "dark"
+                        : "light";
+                };
 
-        const theme = getTheme();
-        const resolved = resolveTheme(theme);
-        if (resolved === 'dark') {
-          document.documentElement.classList.add('dark');
-          document.documentElement.setAttribute('data-theme', 'dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-          document.documentElement.setAttribute('data-theme', 'light');
-        }
-      })();
-    </script>
-  </head>
-  <body>
-    <!-- Header -->
-    <header class="site-header">
-      <div class="container flex align-center justify-between" style="height: 100%;">
-        <a href="/" class="logo">
-          Turnout<span class="logo-dot"></span>
-        </a>
-        <div class="flex align-center gap-md">
-          <a href="/docs" class="nav-docs-link" style="font-weight: 500; color: var(--foreground); opacity: 0.8; margin-right: 0.5rem; text-decoration: none;">Docs</a>
-          <Search />
-        </div>
-      </div>
-    </header>
-
-    <!-- Main Content -->
-    <slot />
-
-    <!-- Footer -->
-    <footer class="site-footer" style="padding: 3rem 0 2rem;">
-      <div class="container">
-        <div class="flex justify-between align-center flex-wrap gap-md">
-          <div class="logo-area">
-            <a href="/" class="logo">
-              Turnout<span class="logo-dot"></span>
-            </a>
-            <p style="font-size: 0.85rem; margin-top: 0.5rem; opacity: 0.6; margin-bottom: 0;">
-              your (small) team's toolbox for running (big) communities and events
-            </p>
-          </div>
-          <div class="flex align-center gap-md flex-wrap">
-            <!-- Theme Switcher -->
-            <div class="theme-switcher">
-              <button id="theme-btn-light" type="button" aria-label="Light theme" class="theme-switcher-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="4"></circle>
-                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
-                </svg>
-              </button>
-              <button id="theme-btn-system" type="button" aria-label="System theme" class="theme-switcher-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect width="20" height="14" x="2" y="3" rx="2"></rect>
-                  <line x1="8" x2="16" y1="21" y2="21"></line>
-                  <line x1="12" x2="12" y1="17" y2="21"></line>
-                </svg>
-              </button>
-              <button id="theme-btn-dark" type="button" aria-label="Dark theme" class="theme-switcher-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-                </svg>
-              </button>
+                const theme = getTheme();
+                const resolved = resolveTheme(theme);
+                if (resolved === "dark") {
+                    document.documentElement.classList.add("dark");
+                    document.documentElement.setAttribute("data-theme", "dark");
+                } else {
+                    document.documentElement.classList.remove("dark");
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        "light",
+                    );
+                }
+            })();
+        </script>
+    </head>
+    <body>
+        <!-- Header -->
+        <header class="site-header">
+            <div
+                class="container flex align-center justify-between"
+                style="height: 100%;"
+            >
+                <a href="/" class="logo">
+                    Turnout<span class="logo-dot"></span>
+                </a>
+                <div class="flex align-center gap-md">
+                    <a
+                        href="/docs"
+                        class="nav-docs-link"
+                        style="font-weight: 500; color: var(--foreground); opacity: 0.8; margin-right: 0.5rem; text-decoration: none;"
+                        >Knowledge Base</a
+                    >
+                    <Search />
+                </div>
             </div>
-            <p style="font-size: 0.85rem; color: var(--muted-foreground); margin-bottom: 0;">© {new Date().getFullYear()} Turnout. All rights reserved.</p>
-          </div>
-        </div>
-      </div>
-    </footer>
+        </header>
 
-    <!-- Script to wire up theme toggler -->
-    <script>
-      const getTheme = (): 'light' | 'dark' | 'system' => {
-        if (typeof localStorage !== 'undefined') {
-          const stored = localStorage.getItem('turnout-theme');
-          if (stored === 'light' || stored === 'dark' || stored === 'system') {
-            return stored;
-          }
-        }
-        return 'system';
-      };
+        <!-- Main Content -->
+        <slot />
 
-      const resolveTheme = (theme: 'light' | 'dark' | 'system'): 'light' | 'dark' => {
-        if (theme !== 'system') return theme;
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      };
+        <!-- Footer -->
+        <footer class="site-footer" style="padding: 3rem 0 2rem;">
+            <div class="container">
+                <div class="flex justify-between align-center flex-wrap gap-md">
+                    <div class="logo-area">
+                        <a href="/" class="logo">
+                            Turnout<span class="logo-dot"></span>
+                        </a>
+                        <p
+                            style="font-size: 0.85rem; margin-top: 0.5rem; opacity: 0.6; margin-bottom: 0;"
+                        >
+                            your (small) team's toolbox for running (big)
+                            communities and events
+                        </p>
+                    </div>
+                    <div class="flex align-center gap-md flex-wrap">
+                        <!-- Theme Switcher -->
+                        <div class="theme-switcher">
+                            <button
+                                id="theme-btn-light"
+                                type="button"
+                                aria-label="Light theme"
+                                class="theme-switcher-btn"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <circle cx="12" cy="12" r="4"></circle>
+                                    <path
+                                        d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+                                    ></path>
+                                </svg>
+                            </button>
+                            <button
+                                id="theme-btn-system"
+                                type="button"
+                                aria-label="System theme"
+                                class="theme-switcher-btn"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <rect
+                                        width="20"
+                                        height="14"
+                                        x="2"
+                                        y="3"
+                                        rx="2"></rect>
+                                    <line x1="8" x2="16" y1="21" y2="21"></line>
+                                    <line x1="12" x2="12" y1="17" y2="21"
+                                    ></line>
+                                </svg>
+                            </button>
+                            <button
+                                id="theme-btn-dark"
+                                type="button"
+                                aria-label="Dark theme"
+                                class="theme-switcher-btn"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"
+                                    ></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <p
+                            style="font-size: 0.85rem; color: var(--muted-foreground); margin-bottom: 0;"
+                        >
+                            © {new Date().getFullYear()} Turnout. All rights reserved.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </footer>
 
-      const applyTheme = (theme: 'light' | 'dark' | 'system') => {
-        const resolved = resolveTheme(theme);
-        if (resolved === 'dark') {
-          document.documentElement.classList.add('dark');
-          document.documentElement.setAttribute('data-theme', 'dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-          document.documentElement.setAttribute('data-theme', 'light');
-        }
-        
-        // Update active button state
-        const buttons = {
-          light: document.getElementById('theme-btn-light'),
-          system: document.getElementById('theme-btn-system'),
-          dark: document.getElementById('theme-btn-dark'),
-        };
+        <!-- Script to wire up theme toggler -->
+        <script>
+            const getTheme = (): "light" | "dark" | "system" => {
+                if (typeof localStorage !== "undefined") {
+                    const stored = localStorage.getItem("turnout-theme");
+                    if (
+                        stored === "light" ||
+                        stored === "dark" ||
+                        stored === "system"
+                    ) {
+                        return stored;
+                    }
+                }
+                return "system";
+            };
 
-        (Object.keys(buttons) as Array<keyof typeof buttons>).forEach((key) => {
-          const btn = buttons[key];
-          if (btn) {
-            if (key === theme) {
-              btn.classList.add('active');
-            } else {
-              btn.classList.remove('active');
-            }
-          }
-        });
-      };
+            const resolveTheme = (
+                theme: "light" | "dark" | "system",
+            ): "light" | "dark" => {
+                if (theme !== "system") return theme;
+                return window.matchMedia("(prefers-color-scheme: dark)").matches
+                    ? "dark"
+                    : "light";
+            };
 
-      const setTheme = (theme: 'light' | 'dark' | 'system') => {
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('turnout-theme', theme);
-        }
-        applyTheme(theme);
-      };
+            const applyTheme = (theme: "light" | "dark" | "system") => {
+                const resolved = resolveTheme(theme);
+                if (resolved === "dark") {
+                    document.documentElement.classList.add("dark");
+                    document.documentElement.setAttribute("data-theme", "dark");
+                } else {
+                    document.documentElement.classList.remove("dark");
+                    document.documentElement.setAttribute(
+                        "data-theme",
+                        "light",
+                    );
+                }
 
-      // Set initial active state of buttons
-      const currentTheme = getTheme();
-      applyTheme(currentTheme);
+                // Update active button state
+                const buttons = {
+                    light: document.getElementById("theme-btn-light"),
+                    system: document.getElementById("theme-btn-system"),
+                    dark: document.getElementById("theme-btn-dark"),
+                };
 
-      // Add click event listeners
-      document.getElementById('theme-btn-light')?.addEventListener('click', () => setTheme('light'));
-      document.getElementById('theme-btn-system')?.addEventListener('click', () => setTheme('system'));
-      document.getElementById('theme-btn-dark')?.addEventListener('click', () => setTheme('dark'));
+                (Object.keys(buttons) as Array<keyof typeof buttons>).forEach(
+                    (key) => {
+                        const btn = buttons[key];
+                        if (btn) {
+                            if (key === theme) {
+                                btn.classList.add("active");
+                            } else {
+                                btn.classList.remove("active");
+                            }
+                        }
+                    },
+                );
+            };
 
-      // Listen to OS preference change if theme is system
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-        if (getTheme() === 'system') {
-          applyTheme('system');
-        }
-      });
-    </script>
-  </body>
+            const setTheme = (theme: "light" | "dark" | "system") => {
+                if (typeof localStorage !== "undefined") {
+                    localStorage.setItem("turnout-theme", theme);
+                }
+                applyTheme(theme);
+            };
+
+            // Set initial active state of buttons
+            const currentTheme = getTheme();
+            applyTheme(currentTheme);
+
+            // Add click event listeners
+            document
+                .getElementById("theme-btn-light")
+                ?.addEventListener("click", () => setTheme("light"));
+            document
+                .getElementById("theme-btn-system")
+                ?.addEventListener("click", () => setTheme("system"));
+            document
+                .getElementById("theme-btn-dark")
+                ?.addEventListener("click", () => setTheme("dark"));
+
+            // Listen to OS preference change if theme is system
+            window
+                .matchMedia("(prefers-color-scheme: dark)")
+                .addEventListener("change", () => {
+                    if (getTheme() === "system") {
+                        applyTheme("system");
+                    }
+                });
+        </script>
+    </body>
 </html>

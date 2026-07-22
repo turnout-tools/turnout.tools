@@ -23,9 +23,11 @@ export const platforms: Platform[] = [
   { id: 'district', name: 'District', faviconUrl: 'https://district.in/favicon.ico' },
   { id: 'bookmyshow', name: 'BookMyShow', faviconUrl: 'https://assets-in.bmscdn.com/webin/common/favicon.ico' },
   { id: 'urbanaut', name: 'Urbanaut', faviconUrl: 'https://urbanaut.app/favicon.ico' },
+  { id: 'swiggy_scenes', name: 'Swiggy Scenes', faviconUrl: 'https://listonscenes.swiggy.com/favicon.png' },
   { id: 'puttingscene', name: 'Putting Scene', faviconUrl: 'https://puttingscene.com/favicon.ico' },
   { id: 'offlyn', name: 'Offlyn', faviconUrl: 'https://substackcdn.com/image/fetch/$s_!66pv!,w_32,h_32,c_fill,f_webp,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F6a075dc6-671d-419c-a0cf-e12ad92cb2e9_480x480.png' },
-  { id: 'luma', name: 'Lu.ma', faviconUrl: 'https://lu.ma/favicon.ico' }
+  { id: 'luma', name: 'Lu.ma', faviconUrl: 'https://lu.ma/favicon.ico' },
+  { id: 'google_forms', name: 'Google Forms', faviconUrl: 'https://ssl.gstatic.com/docs/spreadsheets/forms/forms_icon_2026_v2.ico' },
 ];
 
 export const comparisonData: FeatureRow[] = [
