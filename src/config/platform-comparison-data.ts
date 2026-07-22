@@ -62,7 +62,7 @@ export const comparisonData: FeatureRow[] = [
     ]
   },
   {
-      name: 'Ticketing Setup',
+      name: 'Ticketing Flexibility',
       description: 'Features for setting up and managing ticketing on the platform, and what flexibility they offer',
     values: {},
     subFeatures: [
@@ -82,26 +82,38 @@ export const comparisonData: FeatureRow[] = [
         values: {}
       },
       {
-        name: 'Discount & Promo Codes',
-        description: 'Create percentage, flat-rate, or conditional discount codes.',
-        values: {}
-      },
-      {
-        name: '',
-        description: 'Dedicated hub page showcasing all of an organizer\'s upcoming and past events.',
-        values: {}
-      }
+        name: 'Validity options',
+        description: '',
+        values: {},
+        subFeatures: [
+          {
+            name: 'Capacity limits',
+            description: 'Total number of tickets available for sale',
+            values: {}
+          },
+          {
+            name: 'Availability and expiry times',
+            description: 'Control over when tickets become available and expire',
+            values: {}
+            },
+          {
+            name: 'Per-session capacity',
+            description: 'Total number of tickets available for sale (for cross-session tickets)',
+            values: {}
+            }
+        ]
+        },
+        {
+          name: 'Customize confirmation communication',
+          description: 'Customize the content and format of ticket confirmation notifications',
+          values: {}
+        },
     ]
   },
   {
-    name: 'Communications & Marketing',
+    name: 'Attendee Communication',
     values: {},
     subFeatures: [
-      {
-        name: 'Automated Reminders & Updates',
-        description: 'Automatic WhatsApp/Email/SMS notifications for order confirmations and event reminders.',
-        values: {}
-      },
       {
         name: 'Organizer Broadcasts',
         description: 'Sending announcements, emails, or updates directly to all registered attendees.',
