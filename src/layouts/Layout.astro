@@ -1,15 +1,17 @@
 ---
 import "../styles/global.css";
-import Search from "../components/Search.astro";
+import Search from "astro-pagefind/components/Search.astro";
 
 interface Props {
     title?: string;
     description?: string;
+    showSearch?: boolean;
 }
 
 const {
     title = "Turnout — community and event toolbox",
     description = "your (small) team's toolbox for running (big) communities and events",
+    showSearch = true,
 } = Astro.props;
 ---
 
@@ -89,7 +91,7 @@ const {
                         style="font-weight: 500; color: var(--foreground); opacity: 0.8; margin-right: 0.5rem; text-decoration: none;"
                         >Knowledge Base</a
                     >
-                    <Search />
+                    {showSearch && <Search />}
                 </div>
             </div>
         </header>
