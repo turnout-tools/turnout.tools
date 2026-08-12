@@ -1,5 +1,5 @@
 ---
-import { platforms, comparisonData } from "../config/platform-comparison-data";
+import { platforms, comparisonData, defaultSelectedPlatformIds } from "../config/platform-comparison-data";
 import type { FeatureRow } from "../config/platform-comparison-data";
 
 interface FlatFeatureRow {
@@ -40,35 +40,133 @@ function flattenFeatures(
 }
 
 const flatRows = flattenFeatures(comparisonData);
+
+// Recursively calculate feature tree score with depth-weighted fractional contribution
+function getFeatureScore(row: FeatureRow, platformId: string): { earned: number; max: number } {
+    let components: { earned: number; max: number }[] = [];
+
+    // Check row own value
+    const val = row.values ? row.values[platformId] : undefined;
+    if (val && val.status && val.status !== "neutral") {
+        let score = 0;
+        if (val.status === "positive") score = 1.0;
+        else if (val.status === "warning") score = 0.5;
+        else if (val.status === "negative") score = 0.0;
+        components.push({ earned: score, max: 1.0 });
+    }
+
+    // Check subFeatures
+    if (row.subFeatures && row.subFeatures.length > 0) {
+        row.subFeatures.forEach((sub) => {
+            const subResult = getFeatureScore(sub, platformId);
+            if (subResult.max > 0) {
+                components.push({ earned: subResult.earned / subResult.max, max: 1.0 });
+            }
+        });
+    }
+
+    if (components.length === 0) {
+        return { earned: 0, max: 0 };
+    }
+
+    let totalEarned = 0;
+    components.forEach((c) => {
+        totalEarned += c.earned / components.length;
+    });
+
+    return { earned: totalEarned, max: 1.0 };
+}
+
+const leafRows = flatRows.filter(
+    (row) => !row.hasSubFeatures || Object.keys(row.values).length > 0,
+);
+
+const platformScores = platforms.reduce(
+    (acc, platform) => {
+        let positive = 0;
+        let negative = 0;
+        let warning = 0;
+
+        leafRows.forEach((row) => {
+            const val = row.values[platform.id];
+            if (val && val.status) {
+                if (val.status === "positive") positive++;
+                else if (val.status === "negative") negative++;
+                else if (val.status === "warning") warning++;
+            }
+        });
+
+        let catScores: number[] = [];
+        comparisonData.forEach((cat) => {
+            const res = getFeatureScore(cat, platform.id);
+            if (res.max > 0) {
+                catScores.push(res.earned / res.max);
+            }
+        });
+
+        const totalEarned = catScores.reduce((a, b) => a + b, 0);
+        const totalMax = catScores.length;
+        const percentage =
+            totalMax > 0 ? Math.round((totalEarned / totalMax) * 100) : 0;
+
+        acc[platform.id] = {
+            positive,
+            negative,
+            warning,
+            percentage,
+        };
+        return acc;
+    },
+    {} as Record<
+        string,
+        {
+            positive: number;
+            negative: number;
+            warning: number;
+            percentage: number;
+        }
+    >,
+);
 ---
 
 <div class="comparison-controls">
-    <span class="controls-label">Select Platforms To Compare:</span>
-    <div class="checkbox-group">
-        {
-            platforms.map((platform) => (
-                <label class="checkbox-label" for={`check-${platform.id}`}>
-                    <input
-                        type="checkbox"
-                        id={`check-${platform.id}`}
-                        value={platform.id}
-                        checked
-                        class="platform-toggle"
-                    />
-                    {platform.faviconUrl && (
-                        <img
-                            src={platform.faviconUrl}
-                            alt={`${platform.name} favicon`}
-                            class="platform-select-favicon"
-                            loading="lazy"
-                            width="14"
-                            height="14"
+    <div class="controls-left">
+        <span class="controls-label">Select Platforms:</span>
+        <div class="checkbox-group">
+            {
+                platforms.map((platform) => (
+                    <label class="checkbox-label" for={`check-${platform.id}`}>
+                        <input
+                            type="checkbox"
+                            id={`check-${platform.id}`}
+                            value={platform.id}
+                            checked={defaultSelectedPlatformIds.includes(platform.id)}
+                            class="platform-toggle"
                         />
-                    )}
-                    <span class="platform-label-text">{platform.name}</span>
-                </label>
-            ))
-        }
+                        {platform.faviconUrl && (
+                            <img
+                                src={platform.faviconUrl}
+                                alt={`${platform.name} favicon`}
+                                class="platform-select-favicon"
+                                loading="lazy"
+                                width="14"
+                                height="14"
+                            />
+                        )}
+                        <span class="platform-label-text">{platform.name}</span>
+                    </label>
+                ))
+            }
+        </div>
+    </div>
+    <div class="controls-ai-container">
+        <span class="ai-help-text">I can't read all this, give me something to paste in my chatbot and ask questions</span>
+        <button id="copy-ai-btn" class="copy-ai-btn" type="button" title="Copy context prompt for ChatGPT / Claude">
+            <svg viewBox="0 0 24 24" class="ai-sparkle-icon" width="15" height="15">
+                <path fill="currentColor" d="M12 2L14.5 8.5L21 11L14.5 13.5L12 20L9.5 13.5L3 11L9.5 8.5L12 2Z"/>
+            </svg>
+            <span id="copy-btn-text">Copy for AI</span>
+        </button>
     </div>
 </div>
 
@@ -209,6 +307,57 @@ const flatRows = flattenFeatures(comparisonData);
                 })
             }
         </tbody>
+        <tfoot>
+            <tr class="comparison-row row-score-summary">
+                <td class="feature-name"></td>
+                {
+                    platforms.map((platform) => {
+                        const score = platformScores[platform.id] || {
+                            positive: 0,
+                            negative: 0,
+                            warning: 0,
+                            percentage: 0,
+                        };
+                        const scoreClass =
+                            score.percentage >= 65
+                                ? "positive-score"
+                                : score.percentage >= 45
+                                  ? "warning-score"
+                                  : "negative-score";
+                        const tooltipText = `${score.percentage}% weighted score — ${score.positive} positive, ${score.warning} warning, ${score.negative} negative`;
+                        return (
+                            <td
+                                class="cell-value score-cell"
+                                data-platform={platform.id}
+                            >
+                                <div class="cell-content">
+                                    <span
+                                        class:list={[
+                                            "value-text",
+                                            "score-percentage",
+                                            scoreClass,
+                                        ]}
+                                    >
+                                        {score.percentage}%
+                                    </span>
+                                    <div class="tooltip-container">
+                                        <span
+                                            class="info-icon info-icon-subtle"
+                                            aria-label="Score Details"
+                                        >
+                                            i
+                                        </span>
+                                        <div class="tooltip-content tooltip-right">
+                                            {tooltipText}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        );
+                    })
+                }
+            </tr>
+        </tfoot>
     </table>
 </div>
 
@@ -306,6 +455,33 @@ const flatRows = flattenFeatures(comparisonData);
         toggle.addEventListener("change", updateTableColumns);
     });
 
+    // Copy for AI Prompt Logic
+    const copyBtn = document.getElementById("copy-ai-btn");
+    const copyBtnText = document.getElementById("copy-btn-text");
+
+    function generateAiPrompt(): string {
+        let prompt = "I am analyzing Indian event ticketing platforms using data from Turnout Tools.\n\n";
+        prompt += "Please fetch and read the feature comparison matrix from this plain text table URL:\n";
+        prompt += "https://turnout.tools/llm/platform-comparison.txt\n\n";
+        prompt += "Question: [Ask your question here, e.g. \"Which platform is best for hosting a weekly open mic event?\"]";
+        return prompt;
+    }
+
+    copyBtn?.addEventListener("click", async () => {
+        const textToCopy = generateAiPrompt();
+        try {
+            await navigator.clipboard.writeText(textToCopy);
+            if (copyBtnText) copyBtnText.textContent = "✓ Copied for AI!";
+            copyBtn.classList.add("copied");
+            setTimeout(() => {
+                if (copyBtnText) copyBtnText.textContent = "Copy for AI";
+                copyBtn.classList.remove("copied");
+            }, 2000);
+        } catch (err) {
+            console.error("Failed to copy AI prompt", err);
+        }
+    });
+
     // Run initial configuration
     updateTableColumns();
     updateRowVisibility();
@@ -316,12 +492,77 @@ const flatRows = flattenFeatures(comparisonData);
         display: flex;
         flex-wrap: wrap;
         align-items: center;
+        justify-content: space-between;
         gap: 1rem;
         margin-bottom: 1.5rem;
         padding: 1rem;
         background: var(--card, #1e1e2e);
         border: 1px solid var(--border);
         border-radius: 8px;
+    }
+
+    .controls-left {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .controls-ai-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-left: auto;
+    }
+
+    .ai-help-text {
+        font-size: 0.78rem;
+        font-style: italic;
+        color: var(--muted-foreground);
+        opacity: 0.85;
+        max-width: 250px;
+        line-height: 1.25;
+        text-align: right;
+    }
+
+    .copy-ai-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--primary);
+        background: rgba(var(--primary-rgb, 124, 58, 237), 0.08);
+        border: 1px solid var(--primary);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .copy-ai-btn:hover {
+        background: rgba(var(--primary-rgb, 124, 58, 237), 0.18);
+        box-shadow: 0 0 10px rgba(var(--primary-rgb, 124, 58, 237), 0.25);
+    }
+
+    .copy-ai-btn.copied {
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.15);
+        border-color: #10b981;
+    }
+
+    @media (max-width: 900px) {
+        .controls-ai-container {
+            margin-left: 0;
+            width: 100%;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            padding-top: 0.75rem;
+        }
+        .ai-help-text {
+            text-align: left;
+        }
     }
 
     .controls-label {
@@ -418,6 +659,7 @@ const flatRows = flattenFeatures(comparisonData);
 
     .comparison-table {
         width: 100%;
+        margin: 0;
         border-collapse: collapse;
         text-align: left;
         font-size: 0.9rem;
@@ -681,5 +923,38 @@ const flatRows = flattenFeatures(comparisonData);
         .value-text {
             font-size: 0.8rem;
         }
+    }
+
+    /* Score Summary Row */
+    .row-score-summary {
+        background: rgba(0, 0, 0, 0.25);
+        border-top: 2px solid var(--border);
+    }
+
+    .row-score-summary td {
+        padding: 1rem 0.75rem;
+        border-bottom: none;
+    }
+
+    .score-percentage {
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .positive-score {
+        color: #10b981;
+    }
+
+    .warning-score {
+        color: #f59e0b;
+    }
+
+    .negative-score {
+        color: #ef4444;
+    }
+
+    .neutral-score {
+        color: var(--muted-foreground);
     }
 </style>

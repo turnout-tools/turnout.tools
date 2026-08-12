@@ -7,41 +7,46 @@ interface Props {
   entry: CollectionEntry<'docs'>;
   headings: { depth: number; slug: string; text: string }[];
   hideToc?: boolean;
+  hideSidebar?: boolean;
 }
 
-const { entry, headings, hideToc = false } = Astro.props;
+const { entry, headings, hideToc = false, hideSidebar = false } = Astro.props;
 const currentPath = Astro.url.pathname;
 const tocHeadings = hideToc ? [] : headings.filter(h => h.depth > 1 && h.depth <= 3);
 ---
 
 <Layout title={`${entry.data.title} — Turnout Tools KB`} description={entry.data.description}>
-  <div class:list={['docs-wrapper', 'container', { 'hide-toc': hideToc }]}>
-    <aside class="docs-sidebar" id="docs-sidebar">
-      <nav class="sidebar-nav">
-        {sidebarConfig.map(group => (
-          <div class="sidebar-group">
-            <h4 class="sidebar-group-title">{group.label}</h4>
-            <ul class="sidebar-links">
-              {group.items.map(item => {
-                const isActive = currentPath.replace(/\/$/, '') === item.slug.replace(/\/$/, '');
-                return (
-                  <li>
-                    <a href={item.slug} class:list={['sidebar-link', { active: isActive }]}>
-                      {item.label}
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </nav>
-    </aside>
+  <div class:list={['docs-wrapper', 'container', { 'hide-toc': hideToc, 'hide-sidebar': hideSidebar }]}>
+    {!hideSidebar && (
+      <aside class="docs-sidebar" id="docs-sidebar">
+        <nav class="sidebar-nav">
+          {sidebarConfig.map(group => (
+            <div class="sidebar-group">
+              <h4 class="sidebar-group-title">{group.label}</h4>
+              <ul class="sidebar-links">
+                {group.items.map(item => {
+                  const isActive = currentPath.replace(/\/$/, '') === item.slug.replace(/\/$/, '');
+                  return (
+                    <li>
+                      <a href={item.slug} class:list={['sidebar-link', { active: isActive }]}>
+                        {item.label}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </nav>
+      </aside>
+    )}
 
-    <button class="mobile-sidebar-toggle" id="mobile-sidebar-toggle" aria-label="Toggle navigation menu">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
-      <span>Menu</span>
-    </button>
+    {!hideSidebar && (
+      <button class="mobile-sidebar-toggle" id="mobile-sidebar-toggle" aria-label="Toggle navigation menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
+        <span>Menu</span>
+      </button>
+    )}
 
     <main class="docs-content" data-pagefind-body>
       <article class="markdown-content">
@@ -81,6 +86,12 @@ const tocHeadings = hideToc ? [] : headings.filter(h => h.depth > 1 && h.depth <
   }
   .docs-wrapper.hide-toc {
     grid-template-columns: 240px 1fr;
+  }
+  .docs-wrapper.hide-sidebar {
+    grid-template-columns: 1fr 200px;
+  }
+  .docs-wrapper.hide-sidebar.hide-toc {
+    grid-template-columns: 1fr;
   }
   .docs-sidebar {
     position: sticky;

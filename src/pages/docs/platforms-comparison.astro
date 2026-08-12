@@ -22,8 +22,28 @@ const headings = [
 ];
 ---
 
-<DocLayout entry={entry as any} headings={headings} hideToc={true}>
-    <h2 id="comparison-matrix">Comparison Matrix</h2>
+<DocLayout entry={entry as any} headings={headings} hideToc={true} hideSidebar={true}>
+    <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Dataset",
+        "name": "Indian Event Ticketing Platforms Feature Comparison Matrix",
+        "description": "Comprehensive feature comparison across District, BookMyShow, Urbanaut, Swiggy Scenes, Putting Scene, Offlyn, Lu.ma, and Google Forms.",
+        "url": "https://turnout.tools/docs/platforms-comparison",
+        "sameAs": "https://github.com/turnout-tools/turnout.tools/blob/main/src/config/platform-comparison-data.ts",
+        "distribution": [
+            {
+                "@type": "DataDownload",
+                "encodingFormat": "text/plain",
+                "contentUrl": "https://turnout.tools/llm/platform-comparison.txt"
+            },
+            {
+                "@type": "DataDownload",
+                "encodingFormat": "text/x-typescript",
+                "contentUrl": "https://raw.githubusercontent.com/turnout-tools/turnout.tools/main/src/config/platform-comparison-data.ts"
+            }
+        ]
+    })} />
+
     <PlatformComparisonTable />
 
     <hr
