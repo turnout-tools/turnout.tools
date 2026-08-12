@@ -51,4 +51,27 @@ const headings = [
     />
 
     <ComparisonDetailContent />
+
+    <footer class="comparison-footnote">
+        <p>Notice an error, missing feature, or want to suggest a new platform? <a href="https://github.com/turnout-tools/turnout.tools/issues" target="_blank" rel="noopener noreferrer">File an issue on GitHub</a>.</p>
+    </footer>
 </DocLayout>
+
+<style>
+    .comparison-footnote {
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+        font-size: 0.85rem;
+        color: var(--muted-foreground);
+        text-align: center;
+    }
+    .comparison-footnote a {
+        color: var(--primary);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+    .comparison-footnote a:hover {
+        opacity: 0.85;
+    }
+</style>

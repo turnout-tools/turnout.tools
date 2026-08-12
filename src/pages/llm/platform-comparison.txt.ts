@@ -59,6 +59,7 @@ function flattenTree(rows: FeatureRow[], depth = 0): FlattenedRow[] {
 export const GET: APIRoute = async () => {
   let txt = "TURNOUT TOOLS — INDIAN EVENT TICKETING PLATFORMS FEATURE COMPARISON\n";
   txt += "Source Repository: https://github.com/turnout-tools/turnout.tools/blob/main/src/config/platform-comparison-data.ts\n";
+  txt += "Report Errors / Suggest Edits or New Platforms: File an issue on GitHub at https://github.com/turnout-tools/turnout.tools/issues\n";
   txt += `Generated At: ${new Date().toISOString()}\n\n`;
 
   txt += "PLATFORM WEIGHTED SCORES SUMMARY:\n";
