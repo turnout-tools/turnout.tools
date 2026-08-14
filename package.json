@@ -22,11 +22,11 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^7.1.6",
+    "astro": "^7.2.0",
     "@fontsource-variable/fraunces": "^5.3.0",
     "@fontsource-variable/public-sans": "^5.3.0",
     "astro-pagefind": "^2.0.1",
-    "mermaid": "^11.16.0",
+    "mermaid": "^11.16.1",
     "astro-mermaid": "^2.1.0"
   },
   "devDependencies": {},
