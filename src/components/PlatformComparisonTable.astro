@@ -1,5 +1,9 @@
 ---
-import { platforms, comparisonData, defaultSelectedPlatformIds } from "../config/platform-comparison-data";
+import {
+    platforms,
+    comparisonData,
+    defaultSelectedPlatformIds,
+} from "../config/platform-comparison-data";
 import type { FeatureRow } from "../config/platform-comparison-data";
 
 interface FlatFeatureRow {
@@ -42,7 +46,10 @@ function flattenFeatures(
 const flatRows = flattenFeatures(comparisonData);
 
 // Recursively calculate feature tree score with depth-weighted fractional contribution
-function getFeatureScore(row: FeatureRow, platformId: string): { earned: number; max: number } {
+function getFeatureScore(
+    row: FeatureRow,
+    platformId: string,
+): { earned: number; max: number } {
     let components: { earned: number; max: number }[] = [];
 
     // Check row own value
@@ -60,7 +67,10 @@ function getFeatureScore(row: FeatureRow, platformId: string): { earned: number;
         row.subFeatures.forEach((sub) => {
             const subResult = getFeatureScore(sub, platformId);
             if (subResult.max > 0) {
-                components.push({ earned: subResult.earned / subResult.max, max: 1.0 });
+                components.push({
+                    earned: subResult.earned / subResult.max,
+                    max: 1.0,
+                });
             }
         });
     }
@@ -140,7 +150,9 @@ const platformScores = platforms.reduce(
                             type="checkbox"
                             id={`check-${platform.id}`}
                             value={platform.id}
-                            checked={defaultSelectedPlatformIds.includes(platform.id)}
+                            checked={defaultSelectedPlatformIds.includes(
+                                platform.id,
+                            )}
                             class="platform-toggle"
                         />
                         {platform.faviconUrl && (
@@ -160,10 +172,26 @@ const platformScores = platforms.reduce(
         </div>
     </div>
     <div class="controls-ai-container">
-        <span class="ai-help-text">I can't read all this, give me something to paste in my chatbot and ask questions</span>
-        <button id="copy-ai-btn" class="copy-ai-btn" type="button" title="Copy context prompt for ChatGPT / Claude">
-            <svg viewBox="0 0 24 24" class="ai-sparkle-icon" width="15" height="15">
-                <path fill="currentColor" d="M12 2L14.5 8.5L21 11L14.5 13.5L12 20L9.5 13.5L3 11L9.5 8.5L12 2Z"/>
+        <span class="ai-help-text"
+            >I can't read all this, give me something to paste in my chatbot and
+            ask questions</span
+        >
+        <button
+            id="copy-ai-btn"
+            class="copy-ai-btn"
+            type="button"
+            title="Copy context prompt for ChatGPT / Claude"
+        >
+            <svg
+                viewBox="0 0 24 24"
+                class="ai-sparkle-icon"
+                width="15"
+                height="15"
+            >
+                <path
+                    fill="currentColor"
+                    d="M12 2L14.5 8.5L21 11L14.5 13.5L12 20L9.5 13.5L3 11L9.5 8.5L12 2Z"
+                ></path>
             </svg>
             <span id="copy-btn-text">Copy for AI</span>
         </button>
@@ -460,10 +488,13 @@ const platformScores = platforms.reduce(
     const copyBtnText = document.getElementById("copy-btn-text");
 
     function generateAiPrompt(): string {
-        let prompt = "I am analyzing Indian event ticketing platforms using data from Turnout Tools.\n\n";
-        prompt += "Please fetch and read the feature comparison matrix from this plain text table URL:\n";
+        let prompt =
+            "I am analyzing Indian event ticketing platforms using data from Turnout Tools.\n\n";
+        prompt +=
+            "Please fetch and read the feature comparison matrix from this plain text table URL:\n";
         prompt += "https://turnout.tools/llm/platform-comparison.txt\n\n";
-        prompt += "Question: [Ask your question here, e.g. \"Which platform is best for hosting a weekly open mic event?\"]";
+        prompt +=
+            'Question: [Ask your question here, e.g. "Which platform is best for hosting a weekly open mic event?"]';
         return prompt;
     }
 
@@ -520,7 +551,6 @@ const platformScores = platforms.reduce(
         font-style: italic;
         color: var(--muted-foreground);
         opacity: 0.85;
-        white-space: nowrap;
         line-height: 1.25;
         text-align: right;
     }
