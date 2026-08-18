@@ -161,9 +161,9 @@ export const comparisonData: FeatureRow[] = [
             tooltip: 'Future sessions don\'t trigger a new editorial review, so it won\'t be posted on future dates. Better to resubmit as a new event.'
           },
           offlyn: {
-            value: 'Single-show only',
+            value: 'Allowed (Max 3)',
             status: 'warning',
-            tooltip: 'Only allows single-shows, but provides a one-click duplicate button.'
+            tooltip: 'Supports multiple sessions/dates, but is limited to a maximum of 3 dates.'
           },
           luma: { value: '-', status: 'neutral' },
           google_forms: { value: '-', status: 'neutral' }
