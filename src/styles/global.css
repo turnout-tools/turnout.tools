@@ -47,11 +47,11 @@
 
   --border: oklch(0.88 0.015 80.7);
   --ring: var(--brand-red);
-  
+
   --radius: 0.625rem;
   --max-width: 1200px;
   --header-height: 72px;
-  
+
   /* --- Premium Shadows --- */
   --shadow-soft: 0 1px 2px oklch(0 0 0 / 4%), 0 4px 16px oklch(0 0 0 / 5%);
   --shadow-floating: 0 4px 6px -4px oklch(0 0 0 / 6%), 0 10px 30px -8px oklch(0 0 0 / 10%), 0 1px 3px oklch(0 0 0 / 3%);
@@ -298,21 +298,31 @@ a:hover {
 }
 
 .logo {
-  font-family: var(--font-heading);
-  font-size: 1.5rem;
-  font-weight: 900;
-  color: var(--foreground);
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  text-decoration: none;
 }
 
-.logo-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: var(--brand-red);
-  display: inline-block;
+.logo-img {
+  height: 48px;
+  width: auto;
+  display: block;
+}
+
+.logo-dark {
+  display: none;
+}
+
+.logo-light {
+  display: block;
+}
+
+html.dark .logo-dark {
+  display: block;
+}
+
+html.dark .logo-light {
+  display: none;
 }
 
 .nav-links {
@@ -417,7 +427,7 @@ a:hover {
   left: 0;
   right: 0;
   height: 600px;
-  background: 
+  background:
     radial-gradient(at 0% 0%, oklch(from var(--brand-orange) l c h / 10%) 0px, transparent 50%),
     radial-gradient(at 100% 0%, oklch(from var(--brand-pink) l c h / 8%) 0px, transparent 50%),
     radial-gradient(at 50% 100%, oklch(from var(--brand-aqua) l c h / 5%) 0px, transparent 50%);
@@ -629,5 +639,3 @@ a:hover {
   border-radius: 0;
   font-size: inherit;
 }
-
-
