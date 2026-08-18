@@ -1,0 +1,35 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AIPolicyContent, { frontmatter } from '../content/ai-policy.md';
+
+const title = frontmatter?.title ? `${frontmatter.title} — Turnout` : 'AI Policy — Turnout';
+const description = frontmatter?.description || 'Our principles, practices, and guidelines regarding artificial intelligence at Turnout.';
+---
+
+<Layout title={title} description={description}>
+  <main class="ai-policy-page" data-pagefind-body>
+    <div class="container ai-policy-container">
+      <article class="markdown-content">
+        <AIPolicyContent />
+      </article>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .ai-policy-page {
+    padding: 4rem 0 6rem;
+    min-height: calc(100vh - var(--header-height) - 150px);
+  }
+
+  .ai-policy-container {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    .ai-policy-page {
+      padding: 2.5rem 0 4rem;
+    }
+  }
+</style>

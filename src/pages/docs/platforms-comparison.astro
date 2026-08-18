@@ -1,59 +1,64 @@
 ---
 import DocLayout from "../../layouts/DocLayout.astro";
 import PlatformComparisonTable from "../../components/PlatformComparisonTable.astro";
-import ComparisonDetailContent, {
-    getHeadings,
-} from "../../content/docs/platforms-comparison.md";
 
 const entry = {
     data: {
-        title: "Event Ticketing Platforms Feature Comparison",
+        title: "Evaluating Ticketing Platforms in India",
         description:
-            "Comparing feature sets across different event ticketing platforms.",
+            "Comparing feature sets across different event ticketing platforms in India",
     },
 };
-
-const fileHeadings = getHeadings();
 
 // Prepend or append specific TOC items since the table is injected dynamically
 const headings = [
     { depth: 2, slug: "comparison-matrix", text: "Comparison Matrix" },
-    ...fileHeadings.filter((h) => h.slug !== "comparison-matrix"),
 ];
 ---
 
-<DocLayout entry={entry as any} headings={headings} hideToc={true} hideSidebar={true}>
-    <script type="application/ld+json" set:html={JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "Dataset",
-        "name": "Indian Event Ticketing Platforms Feature Comparison Matrix",
-        "description": "Comprehensive feature comparison across District, BookMyShow, Urbanaut, Swiggy Scenes, Putting Scene, Offlyn, Lu.ma, and Google Forms.",
-        "url": "https://turnout.tools/docs/platforms-comparison",
-        "sameAs": "https://github.com/turnout-tools/turnout.tools/blob/main/src/config/platform-comparison-data.ts",
-        "distribution": [
-            {
-                "@type": "DataDownload",
-                "encodingFormat": "text/plain",
-                "contentUrl": "https://turnout.tools/llm/platform-comparison.txt"
-            },
-            {
-                "@type": "DataDownload",
-                "encodingFormat": "text/x-typescript",
-                "contentUrl": "https://raw.githubusercontent.com/turnout-tools/turnout.tools/main/src/config/platform-comparison-data.ts"
-            }
-        ]
-    })} />
+<DocLayout
+    entry={entry as any}
+    headings={headings}
+    hideToc={true}
+    hideSidebar={true}
+>
+    <script
+        type="application/ld+json"
+        set:html={JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Dataset",
+            name: "Indian Event Ticketing Platforms Feature Comparison Matrix",
+            description:
+                "Comprehensive feature comparison across District, BookMyShow, Urbanaut, Swiggy Scenes, Putting Scene, Offlyn, Lu.ma, and Google Forms.",
+            url: "https://turnout.tools/docs/platforms-comparison",
+            sameAs: "https://github.com/turnout-tools/turnout.tools/blob/main/src/config/platform-comparison-data.ts",
+            distribution: [
+                {
+                    "@type": "DataDownload",
+                    encodingFormat: "text/plain",
+                    contentUrl:
+                        "https://turnout.tools/llm/platform-comparison.txt",
+                },
+                {
+                    "@type": "DataDownload",
+                    encodingFormat: "text/x-typescript",
+                    contentUrl:
+                        "https://raw.githubusercontent.com/turnout-tools/turnout.tools/main/src/config/platform-comparison-data.ts",
+                },
+            ],
+        })}
+    />
 
     <PlatformComparisonTable />
 
-    <hr
-        style="margin: 3rem 0; border: 0; border-top: 1px solid var(--border);"
-    />
-
-    <ComparisonDetailContent />
-
     <footer class="comparison-footnote">
-        <p>Notice an error, missing feature, or want to suggest a new platform? <a href="https://github.com/turnout-tools/turnout.tools/issues" target="_blank" rel="noopener noreferrer">File an issue on GitHub</a>.</p>
+        <p>
+            Notice an error, missing feature, or want to suggest a new platform? <a
+                href="https://github.com/turnout-tools/turnout.tools/issues"
+                target="_blank"
+                rel="noopener noreferrer">File an issue on GitHub</a
+            >.
+        </p>
     </footer>
 </DocLayout>
 

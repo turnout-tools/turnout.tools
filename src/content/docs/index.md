@@ -14,18 +14,18 @@ Welcome to the Turnout Knowledge Base. These are a set of guides, playbooks, and
   
   <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; background: var(--card); display: flex; flex-direction: column; justify-content: space-between;">
     <div>
-      <h3 style="margin-top: 0; color: var(--primary);">🔌 Ticketing Platforms</h3>
-      <p style="font-size: 0.95rem; margin-bottom: 1.5rem;">Compare feature sets to find the best platform(s) to list your event.</p>
+      <h3 style="margin-top: 0; color: var(--primary);">Ticketing Platform Features</h3>
+      <p style="font-size: 0.95rem; margin-bottom: 1.5rem;">Feature comparisions between popular event platforms in India</p>
     </div>
-    <a href="/docs/platforms-comparison/" style="font-weight: 600; text-decoration: none; color: var(--primary); font-size: 0.9rem;">View Comparison Matrix →</a>
+    <a href="/docs/platforms-comparison/" style="font-weight: 600; text-decoration: none; color: var(--primary); font-size: 0.9rem;">View feature matrix →</a>
   </div>
 
   <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; background: var(--card); display: flex; flex-direction: column; justify-content: space-between;">
     <div>
-      <h3 style="margin-top: 0; color: var(--primary);">🛡️ Code of Conduct</h3>
-      <p style="font-size: 0.95rem; margin-bottom: 1.5rem;">Establish safety guidelines and access our reference Code of Conduct template for your events.</p>
+      <h3 style="margin-top: 0; color: var(--primary);">Code of Conduct Generator</h3>
+      <p style="font-size: 0.95rem; margin-bottom: 1.5rem;">Create a code of conduct for your community</p>
     </div>
-    <a href="/docs/code-of-conduct/" style="font-weight: 600; text-decoration: none; color: var(--primary); font-size: 0.9rem;">Get Template →</a>
+    <a href="/docs/code-of-conduct/" style="font-weight: 600; text-decoration: none; color: var(--primary); font-size: 0.9rem;">View CoC Template →</a>
   </div>
 
 </div>
