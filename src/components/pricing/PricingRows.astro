@@ -1,0 +1,227 @@
+---
+import type { Platform } from "../../config/platform-comparison-data";
+import { formatPreciseINR } from "./pricingUtils";
+import type { CalculationResult } from "./pricingUtils";
+
+interface Props {
+    platforms: Platform[];
+    calcs: { platform: Platform; result: CalculationResult }[];
+}
+
+const { platforms, calcs } = Astro.props;
+---
+
+<!-- Row 1: Attendee Pays (Total Breakup) -->
+<tr class="comparison-row highlight-row" data-row-type="attendee-total">
+    <td class="feature-name">
+        <div class="feature-title-container">
+            <div class="feature-title-wrapper">
+                <span class="feature-title">Customer Pays:</span>
+            </div>
+            <span class="feature-description"></span>
+        </div>
+    </td>
+    {calcs.map((c) => (
+        <td class="cell-value" data-platform={c.platform.id}>
+            <div class="cell-content-stacked">
+                <div class="math-breakup-card">
+                    <div class="math-breakup-line">
+                        <span class="math-label">Base</span>
+                        <span class="math-value" data-field="attendee-math-base">
+                            {formatPreciseINR(c.result.basePrice)}
+                        </span>
+                    </div>
+                    <div
+                        class="math-breakup-line math-op-add"
+                        data-field="attendee-math-fee-row"
+                        style={c.result.bookingFeeTotal === 0 ? "display: none;" : ""}
+                    >
+                        <span class="math-label">Fee</span>
+                        <span class="math-value text-warning" data-field="attendee-math-fee">
+                            +{formatPreciseINR(c.result.bookingFeeTotal)}
+                        </span>
+                    </div>
+                    <div class="math-divider"></div>
+                    <div class="math-total-line">
+                        <span class="math-label">Total</span>
+                        <span class="math-value math-total-val" data-field="attendee-total">
+                            {formatPreciseINR(c.result.attendeeTotal)}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </td>
+    ))}
+</tr>
+
+<!-- Row 2: Base Ticket Price -->
+<tr class="comparison-row" data-row-type="base-price">
+    <td class="feature-name">
+        <div class="feature-title-container">
+            <div class="feature-title-wrapper">
+                <span class="feature-title">Base Ticket Price</span>
+            </div>
+            <span class="feature-description">Ticket price set by organizer</span>
+        </div>
+    </td>
+    {calcs.map((c) => (
+        <td class="cell-value" data-platform={c.platform.id}>
+            <div class="cell-content-stacked">
+                <div class="cell-val" data-field="base-price">
+                    {formatPreciseINR(c.result.basePrice)}
+                </div>
+            </div>
+        </td>
+    ))}
+</tr>
+
+<!-- Row 3: Booking / Convenience Fee -->
+<tr class="comparison-row" data-row-type="booking-fee">
+    <td class="feature-name">
+        <div class="feature-title-container">
+            <div class="feature-title-wrapper">
+                <span class="feature-title">Booking / Convenience Fee</span>
+            </div>
+            <span class="feature-description">Paid by customer</span>
+        </div>
+    </td>
+    {calcs.map((c) => (
+        <td class="cell-value" data-platform={c.platform.id}>
+            <div class="cell-content-stacked" data-field="booking-fee-container">
+                <div
+                    class="cell-val text-warning"
+                    data-field="booking-fee-val"
+                    style={c.result.bookingFeeTotal === 0 ? "display: none;" : ""}
+                >
+                    {formatPreciseINR(c.result.bookingFeeTotal)}
+                </div>
+                <span
+                    class="badge-zero"
+                    data-field="booking-fee-badge"
+                    style={c.result.bookingFeeTotal === 0 ? "" : "display: none;"}
+                >
+                    ₹0
+                </span>
+                <div
+                    class="cell-sub"
+                    data-field="booking-fee-sub"
+                    style={c.result.bookingFeeTotal === 0 ? "display: none;" : ""}
+                >
+                    {c.result.cfg.bookingFeeNote || `${c.result.cfg.bookingFeePercent}% + GST`}
+                </div>
+            </div>
+        </td>
+    ))}
+</tr>
+
+<!-- Row 4: Platform Commission & GST -->
+<tr class="comparison-row" data-row-type="commission">
+    <td class="feature-name">
+        <div class="feature-title-container">
+            <div class="feature-title-wrapper">
+                <span class="feature-title">Platform Commission & GST</span>
+            </div>
+            <span class="feature-description">Deducted from organizer</span>
+        </div>
+    </td>
+    {calcs.map((c) => (
+        <td class="cell-value" data-platform={c.platform.id}>
+            <div class="cell-content-stacked" data-field="commission-container">
+                <div
+                    class="cell-val text-danger"
+                    data-field="commission-val"
+                    style={c.result.commissionTotal === 0 ? "display: none;" : ""}
+                >
+                    -{formatPreciseINR(c.result.commissionTotal)}
+                </div>
+                <span
+                    class="badge-zero"
+                    data-field="commission-badge"
+                    style={c.result.commissionTotal === 0 ? "" : "display: none;"}
+                >
+                    ₹0
+                </span>
+                <div
+                    class="cell-sub"
+                    data-field="commission-sub"
+                    style={c.result.commissionTotal === 0 ? "display: none;" : ""}
+                >
+                    {`${c.result.cfg.commissionPercent}% (${formatPreciseINR(c.result.commissionBase)}) + 18% GST`}
+                </div>
+            </div>
+        </td>
+    ))}
+</tr>
+
+<!-- Row 5: Organizer Net Payout (Breakup) -->
+<tr class="comparison-row net-row" data-row-type="net-payout">
+    <td class="feature-name">
+        <div class="feature-title-container">
+            <div class="feature-title-wrapper">
+                <span class="feature-title">Organizer Net Payout</span>
+            </div>
+            <span class="feature-description"></span>
+        </div>
+    </td>
+    {calcs.map((c) => (
+        <td class="cell-value" data-platform={c.platform.id}>
+            <div class="cell-content-stacked">
+                <div class="math-breakup-card math-breakup-payout">
+                    <div class="math-breakup-line">
+                        <span class="math-label">Base</span>
+                        <span class="math-value" data-field="payout-math-base">
+                            {formatPreciseINR(c.result.basePrice)}
+                        </span>
+                    </div>
+                    <div
+                        class="math-breakup-line math-op-sub"
+                        data-field="payout-math-comm-row"
+                        style={c.result.commissionTotal === 0 ? "display: none;" : ""}
+                    >
+                        <span class="math-label">Fee(+GST)</span>
+                        <span class="math-value text-danger" data-field="payout-math-comm">
+                            -{formatPreciseINR(c.result.commissionTotal)}
+                        </span>
+                    </div>
+                    <div class="math-divider"></div>
+                    <div class="math-total-line">
+                        <span class="math-label">Payout</span>
+                        <span class="math-value math-payout-val" data-field="net-payout">
+                            {formatPreciseINR(c.result.organizerNetPayout)}
+                        </span>
+                    </div>
+                    <div class="cell-sub" data-field="effective-deduction">
+                        Effective deduction: {c.result.effectiveDeductionPct.toFixed(1)}%
+                    </div>
+                </div>
+            </div>
+        </td>
+    ))}
+</tr>
+
+<!-- Row 6: Caveats & Pricing Terms -->
+<tr class="comparison-row" data-row-type="caveats">
+    <td class="feature-name">
+        <div class="feature-title-container">
+            <div class="feature-title-wrapper">
+                <span class="feature-title">Caveats & Gotchas</span>
+            </div>
+            <span class="feature-description"></span>
+        </div>
+    </td>
+    {calcs.map((c) => (
+        <td class="cell-value" data-platform={c.platform.id}>
+            <div class="cell-content-stacked">
+                {c.result.cfg.caveats && c.result.cfg.caveats.length > 0 ? (
+                    <ul class="caveats-list">
+                        {c.result.cfg.caveats.map((cav) => (
+                            <li>{cav}</li>
+                        ))}
+                    </ul>
+                ) : (
+                    <span class="text-muted"></span>
+                )}
+            </div>
+        </td>
+    ))}
+</tr>

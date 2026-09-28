@@ -1,0 +1,30 @@
+---
+import type { Platform } from "../../config/platform-comparison-data";
+
+interface Props {
+    platforms: Platform[];
+}
+
+const { platforms } = Astro.props;
+---
+
+<tr>
+    <th class="feature-col">Feature / Metric</th>
+    {platforms.map((p) => (
+        <th class="platform-col" data-platform={p.id}>
+            <div class="platform-header-content">
+                {p.faviconUrl && (
+                    <img
+                        src={p.faviconUrl}
+                        class="platform-favicon"
+                        alt={`${p.name} favicon`}
+                        width="16"
+                        height="16"
+                        onerror="this.style.display='none'"
+                    />
+                )}
+                <span>{p.name}</span>
+            </div>
+        </th>
+    ))}
+</tr>

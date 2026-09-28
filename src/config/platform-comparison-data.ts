@@ -19,8 +19,135 @@ export interface FeatureRow {
   subFeatures?: FeatureRow[];
 }
 
+export interface PlatformPricing {
+  // Organizer commission rate as percentage (e.g. 5 for 5%)
+  commissionPercent: number;
+  // Any fixed organizer commission fee per ticket in INR (e.g. 0)
+  commissionFixed?: number;
+  // Booking fee rate charged to buyer as percentage (e.g. 2 for 2%)
+  bookingFeePercent: number;
+  // Booking fee fixed charge in INR (e.g. 10)
+  bookingFeeFixed?: number;
+  // Whether booking fee is charged to attendee or absorbed by organizer
+  // TODO: can the platform let the organizer choose who pays for this?
+  bookingFeeBorneBy: 'attendee' | 'organizer';
+  // GST applies on platform fees (usually 18% on commissions & booking fees)
+  gstOnFeesPercent: number;
+  // Optional summary / label for commission or custom plans
+  // TODO: find a good place to render this, maybe a tooltip?
+  commissionNote?: string;
+  // Optional summary / label for booking fee
+  // TODO: find a good place to render this, maybe a tooltip?
+  bookingFeeNote?: string;
+  // Caveats, payment gateway charges, or payout delay notes
+  caveats: string[];
+}
+
+export const platformPricingData: Record<string, PlatformPricing> = {
+  // district: {
+  //     commissionPercent: 0,
+  //     bookingFeePercent: 5,
+  //     bookingFeeFixed: 0,
+  //     bookingFeeBorneBy: 'attendee',
+  //     gstOnFeesPercent: 18,
+  //     commissionNote: '',
+  //     bookingFeeNote: '',
+  //     caveats: [
+  //     ]
+  // },
+  thumpn: {
+      commissionPercent: 10,
+      bookingFeePercent: 5.0,
+      bookingFeeFixed: 0,
+      bookingFeeBorneBy: 'attendee',
+      gstOnFeesPercent: 18,
+      commissionNote: '',
+      bookingFeeNote: '',
+      caveats: [
+      ]
+  },
+  bookmyshow: {
+      commissionPercent: 10.0,
+      bookingFeePercent: 7.0,
+      bookingFeeFixed: 0,
+      bookingFeeBorneBy: 'attendee',
+      gstOnFeesPercent: 18,
+      commissionNote: '',
+      bookingFeeNote: '',
+      caveats: [
+      ]
+  },
+  urbanaut: {
+      commissionPercent: 5,
+      bookingFeePercent: 5,
+      bookingFeeFixed: 0,
+      bookingFeeBorneBy: 'attendee',
+      gstOnFeesPercent: 18,
+      commissionNote: '',
+      bookingFeeNote: '',
+      caveats: [
+      ]
+  },
+  // swiggy_scenes: {
+  //     commissionPercent: 0,
+  //     bookingFeePercent: 0,
+  //     bookingFeeFixed: 0,
+  //     bookingFeeBorneBy: 'attendee',
+  //     gstOnFeesPercent: 0,
+  //     commissionNote: '',
+  //     bookingFeeNote: '',
+  //     caveats: [
+  //     ]
+  // },
+  // puttingscene: {
+  //     commissionPercent: 0,
+  //     bookingFeePercent: 0,
+  //     bookingFeeFixed: 0,
+  //     bookingFeeBorneBy: 'attendee',
+  //     gstOnFeesPercent: 0,
+  //     commissionNote: '',
+  //     bookingFeeNote: '',
+  //     caveats: [
+  //     ]
+  // },
+  // offlyn: {
+  //     commissionPercent: 0,
+  //     bookingFeePercent: 0,
+  //     bookingFeeFixed: 0,
+  //     bookingFeeBorneBy: 'attendee',
+  //     gstOnFeesPercent: 0,
+  //     commissionNote: '',
+  //     bookingFeeNote: '',
+  //     caveats: [
+  //     ]
+  // },
+  luma: {
+      commissionPercent: 0,
+      bookingFeePercent: 0,
+      bookingFeeFixed: 0,
+      bookingFeeBorneBy: 'attendee',
+      gstOnFeesPercent: 0,
+      commissionNote: '',
+      bookingFeeNote: 'No platform fee (Manual Payments)',
+      caveats: [
+  ]
+  },
+  google_forms: {
+    commissionPercent: 0,
+    bookingFeePercent: 0,
+    bookingFeeFixed: 0,
+    bookingFeeBorneBy: 'attendee',
+    gstOnFeesPercent: 0,
+    commissionNote: '',
+    bookingFeeNote: 'No platform fee (Manual Payments)',
+    caveats: [
+    ]
+  }
+};
+
 export const platforms: Platform[] = [
   { id: 'district', name: 'District', faviconUrl: 'https://district.in/favicon.ico' },
+  { id: 'thumpn', name: 'thumpN', faviconUrl: 'https://thumpn.com/favicon.ico' },
   { id: 'bookmyshow', name: 'BookMyShow', faviconUrl: 'https://assets-in.bmscdn.com/webin/common/favicon.ico' },
   { id: 'urbanaut', name: 'Urbanaut', faviconUrl: 'https://urbanaut.app/favicon.ico' },
   { id: 'swiggy_scenes', name: 'Swiggy Scenes', faviconUrl: 'https://listonscenes.swiggy.com/favicon.png' },

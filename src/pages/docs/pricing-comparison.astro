@@ -1,0 +1,90 @@
+---
+import DocLayout from "../../layouts/DocLayout.astro";
+import PricingCalculator from "../../components/pricing/PricingCalculator.astro";
+
+const entry = {
+    data: {
+        title: "Ticketing Platform Pricing & Fee Calculator",
+        description:
+            "Compare commissions, attendee booking fees, and net organizer payout across ticketing platforms in India.",
+    },
+};
+
+const headings = [{ depth: 2, slug: "calculator", text: "Pricing & Fee Breakup" }];
+---
+
+<DocLayout entry={entry as any} headings={headings} hideToc={true} hideSidebar={true}>
+    <script
+        type="application/ld+json"
+        set:html={JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Dataset",
+            name: "Indian Event Ticketing Platforms Pricing & Fee Breakdown",
+            description:
+                "Detailed commissions, convenience fees, and net organizer payout calculations across Indian event ticketing platforms.",
+            url: "https://turnout.tools/docs/pricing-comparison",
+            sameAs: "https://github.com/turnout-tools/turnout.tools/blob/main/src/config/platform-comparison-data.ts",
+            distribution: [
+                {
+                    "@type": "DataDownload",
+                    encodingFormat: "text/plain",
+                    contentUrl: "https://turnout.tools/llm/pricing-comparison.txt",
+                },
+                {
+                    "@type": "DataDownload",
+                    encodingFormat: "text/x-typescript",
+                    contentUrl:
+                        "https://raw.githubusercontent.com/turnout-tools/turnout.tools/main/src/config/platform-comparison-data.ts",
+                },
+            ],
+        })}
+    />
+
+    <PricingCalculator />
+
+    <footer class="pricing-footnote">
+        <p>
+            Platform commercial models change regularly and vary based on negotiation, organizer scale, or category.
+            Notice an error or have updated commercial terms for a platform?{" "}
+            <a href="https://github.com/turnout-tools/turnout.tools/issues" target="_blank" rel="noopener noreferrer">
+                File an issue or PR on GitHub
+            </a>
+            .
+        </p>
+    </footer>
+</DocLayout>
+
+<style>
+    .pricing-page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-title {
+        font-family: var(--font-heading);
+        font-size: 2.25rem;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: var(--foreground);
+    }
+
+    .page-lead {
+        font-size: 1.1rem;
+        color: var(--muted-foreground);
+        line-height: 1.6;
+        max-width: 800px;
+    }
+
+    .pricing-footnote {
+        margin-top: 3.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+        font-size: 0.85rem;
+        color: var(--muted-foreground);
+        line-height: 1.6;
+    }
+
+    .pricing-footnote a {
+        color: var(--primary);
+        text-decoration: underline;
+    }
+</style>

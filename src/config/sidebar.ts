@@ -13,6 +13,7 @@ export const sidebarConfig: SidebarGroup[] = [
     label: 'Event Platforms',
     items: [
       { label: 'Feature Comparison', slug: '/docs/platforms-comparison' },
+      { label: 'Pricing & Fee Breakup', slug: '/docs/pricing-comparison' },
     ],
   },
   {

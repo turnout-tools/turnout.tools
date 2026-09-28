@@ -1,0 +1,991 @@
+---
+import { platforms, defaultSelectedPlatformIds, platformPricingData } from "../../config/platform-comparison-data";
+import PricingTableHeader from "./PricingTableHeader.astro";
+import PricingRows from "./PricingRows.astro";
+import { calculateBreakup } from "./pricingUtils";
+
+// Filter platforms to only those present in platformPricingData
+const pricingPlatforms = platforms.filter((p) => p.id in platformPricingData);
+const defaultPlatformIds = defaultSelectedPlatformIds.filter((id) => id in platformPricingData);
+
+const initialCalcs = pricingPlatforms.map((p) => ({
+    platform: p,
+    result: calculateBreakup(p.id, 500),
+}));
+---
+
+<div class="pricing-calculator-layout">
+    <!-- Interactive Controls Section -->
+    <div class="calculator-controls-card">
+        <div class="price-input-section">
+            <label for="ticket-price-input" class="control-label">
+                Base Ticket Price (₹)
+            </label>
+            <div class="input-with-presets">
+                <div class="input-group">
+                    <span class="currency-prefix">₹</span>
+                    <input
+                        type="number"
+                        id="ticket-price-input"
+                        class="price-input"
+                        value="500"
+                        min="0"
+                        step="10"
+                        placeholder="500"
+                    />
+                </div>
+                <div class="preset-chips">
+                    <button type="button" class="preset-chip" data-price="0">
+                        Free (₹0)
+                    </button>
+                    <button type="button" class="preset-chip" data-price="250">
+                        ₹250
+                    </button>
+                    <button type="button" class="preset-chip active" data-price="500">
+                        ₹500
+                    </button>
+                    <button type="button" class="preset-chip" data-price="1000">
+                        ₹1,000
+                    </button>
+                    <button type="button" class="preset-chip" data-price="2500">
+                        ₹2,500
+                    </button>
+                    <button type="button" class="preset-chip" data-price="5000">
+                        ₹5,000
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Platform Filter Pills -->
+        <div class="platform-filter-section">
+            <div class="platform-filter-header">
+                <div class="platform-filter-left">
+                    <span class="control-label">Select Platforms:</span>
+                    <div class="platform-filter-actions">
+                        <button type="button" id="btn-select-all" class="filter-action-btn">
+                            Select All
+                        </button>
+                        <button type="button" id="btn-reset-selection" class="filter-action-btn">
+                            Reset Defaults
+                        </button>
+                    </div>
+                </div>
+                <div class="controls-ai-container">
+                    <span class="ai-help-text"
+                        >I can't read all this, give me something to paste in my chatbot and
+                        ask questions</span
+                    >
+                    <button
+                        id="copy-ai-btn"
+                        class="copy-ai-btn"
+                        type="button"
+                        title="Copy context prompt for ChatGPT / Claude"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            class="ai-sparkle-icon"
+                            width="15"
+                            height="15"
+                        >
+                            <path
+                                fill="currentColor"
+                                d="M12 2L14.5 8.5L21 11L14.5 13.5L12 20L9.5 13.5L3 11L9.5 8.5L12 2Z"
+                            ></path>
+                        </svg>
+                        <span id="copy-btn-text">Copy for AI</span>
+                    </button>
+                </div>
+            </div>
+            <div class="checkbox-group" id="platform-chips">
+                {pricingPlatforms.map((platform) => {
+                    const isSelected = defaultPlatformIds.includes(platform.id);
+                    return (
+                        <label class="checkbox-label" for={`check-pricing-${platform.id}`}>
+                            <input
+                                type="checkbox"
+                                id={`check-pricing-${platform.id}`}
+                                value={platform.id}
+                                checked={isSelected}
+                                class="platform-toggle"
+                            />
+                            {platform.faviconUrl && (
+                                <img
+                                    src={platform.faviconUrl}
+                                    alt={`${platform.name} favicon`}
+                                    class="platform-select-favicon"
+                                    loading="lazy"
+                                    width="14"
+                                    height="14"
+                                    onerror="this.style.display='none'"
+                                />
+                            )}
+                            <span class="platform-label-text">{platform.name}</span>
+                        </label>
+                    );
+                })}
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="comparison-matrix-container" tabindex="0">
+        <table class="comparison-table" id="pricing-matrix-table">
+            <thead id="pricing-table-head">
+                <PricingTableHeader platforms={pricingPlatforms} />
+            </thead>
+            <tbody id="pricing-table-body">
+                <PricingRows platforms={pricingPlatforms} calcs={initialCalcs} />
+                <tr id="empty-state-row" style="display: none;">
+                    <td class="empty-state" colspan={pricingPlatforms.length + 1}>
+                        No platforms selected. Please choose at least one platform above.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Store data in client readable script tag -->
+<script
+    id="pricing-raw-data"
+    type="application/json"
+    set:html={JSON.stringify({
+        platforms: pricingPlatforms,
+        defaultSelectedPlatformIds: defaultPlatformIds,
+        platformPricingData,
+    })}
+/>
+<script>
+    import { calculateBreakup, formatPreciseINR } from "./pricingUtils";
+    import type { Platform, PlatformPricing } from "../../config/platform-comparison-data";
+
+    const dataScript = document.getElementById("pricing-raw-data");
+    if (dataScript) {
+        const rawData = JSON.parse(dataScript.textContent || "{}");
+        const platforms: Platform[] = rawData.platforms || [];
+        const platformPricingData: Record<string, PlatformPricing> = rawData.platformPricingData || {};
+        const defaultIds: string[] = rawData.defaultSelectedPlatformIds || [];
+
+        let selectedPlatformIds = new Set<string>(defaultIds);
+        let ticketPrice = 500;
+
+        const priceInput = document.getElementById("ticket-price-input") as HTMLInputElement;
+        const presetButtons = document.querySelectorAll(".preset-chip");
+        const platformToggles = document.querySelectorAll<HTMLInputElement>(".platform-toggle");
+        const btnSelectAll = document.getElementById("btn-select-all");
+        const btnResetSelection = document.getElementById("btn-reset-selection");
+        const emptyStateRow = document.getElementById("empty-state-row");
+
+        function updateTable() {
+            const hasSelected = selectedPlatformIds.size > 0;
+
+            // Update column visibility across headers and all body cells
+            const cells = document.querySelectorAll<HTMLElement>("[data-platform]");
+            cells.forEach((cell) => {
+                const pId = cell.getAttribute("data-platform");
+                if (pId) {
+                    cell.style.display = selectedPlatformIds.has(pId) ? "" : "none";
+                }
+            });
+
+            // Toggle empty state
+            const allDataRows = document.querySelectorAll<HTMLElement>(".comparison-row");
+            if (emptyStateRow) {
+                emptyStateRow.style.display = hasSelected ? "none" : "";
+                allDataRows.forEach((r) => {
+                    r.style.display = hasSelected ? "" : "none";
+                });
+            }
+
+            if (!hasSelected) return;
+
+            // Update calculated values in existing DOM elements without string concatenation
+            platforms.forEach((p) => {
+                if (!selectedPlatformIds.has(p.id)) return;
+                const result = calculateBreakup(p.id, ticketPrice);
+
+                // Row 1: Attendee Pays (Total Math Breakup)
+                const attendeeMathBaseEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="attendee-math-base"]`,
+                );
+                const attendeeMathFeeRowEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="attendee-math-fee-row"]`,
+                );
+                const attendeeMathFeeEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="attendee-math-fee"]`,
+                );
+                const attendeeTotalEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="attendee-total"]`,
+                );
+                if (attendeeMathBaseEl) {
+                    attendeeMathBaseEl.textContent = formatPreciseINR(result.basePrice);
+                }
+                if (attendeeMathFeeRowEl && attendeeMathFeeEl) {
+                    attendeeMathFeeRowEl.style.display = result.bookingFeeTotal > 0 ? "" : "none";
+                    attendeeMathFeeEl.textContent = `+${formatPreciseINR(result.bookingFeeTotal)}`;
+                }
+                if (attendeeTotalEl) {
+                    attendeeTotalEl.textContent = formatPreciseINR(result.attendeeTotal);
+                }
+
+                // Row 2: Base Ticket Price
+                const basePriceEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="base-price"]`,
+                );
+                if (basePriceEl) {
+                    basePriceEl.textContent = formatPreciseINR(result.basePrice);
+                }
+
+                // Row 3: Booking / Convenience Fee
+                const bookingFeeValEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="booking-fee-val"]`,
+                );
+                const bookingFeeBadgeEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="booking-fee-badge"]`,
+                );
+                const bookingFeeSubEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="booking-fee-sub"]`,
+                );
+                if (bookingFeeValEl && bookingFeeBadgeEl && bookingFeeSubEl) {
+                    if (result.bookingFeeTotal === 0) {
+                        bookingFeeValEl.style.display = "none";
+                        bookingFeeBadgeEl.style.display = "";
+                        bookingFeeSubEl.style.display = "none";
+                    } else {
+                        bookingFeeValEl.style.display = "";
+                        bookingFeeBadgeEl.style.display = "none";
+                        bookingFeeSubEl.style.display = "";
+                        bookingFeeValEl.textContent = formatPreciseINR(result.bookingFeeTotal);
+                        bookingFeeSubEl.textContent =
+                            result.cfg.bookingFeeNote || `${result.cfg.bookingFeePercent}% + GST`;
+                    }
+                }
+
+                // Row 4: Platform Commission & GST
+                const commissionValEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="commission-val"]`,
+                );
+                const commissionBadgeEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="commission-badge"]`,
+                );
+                const commissionSubEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="commission-sub"]`,
+                );
+                if (commissionValEl && commissionBadgeEl && commissionSubEl) {
+                    if (result.commissionTotal === 0) {
+                        commissionValEl.style.display = "none";
+                        commissionBadgeEl.style.display = "";
+                        commissionSubEl.style.display = "none";
+                    } else {
+                        commissionValEl.style.display = "";
+                        commissionBadgeEl.style.display = "none";
+                        commissionSubEl.style.display = "";
+                        commissionValEl.textContent = `-${formatPreciseINR(result.commissionTotal)}`;
+                        commissionSubEl.textContent = `${result.cfg.commissionPercent}% (${formatPreciseINR(result.commissionBase)}) + 18% GST`;
+                    }
+                }
+
+                // Row 5: Organizer Net Payout (Math Breakup)
+                const payoutMathBaseEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="payout-math-base"]`,
+                );
+                const payoutMathCommRowEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="payout-math-comm-row"]`,
+                );
+                const payoutMathCommEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="payout-math-comm"]`,
+                );
+                const netPayoutEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="net-payout"]`,
+                );
+                const effectiveDeductionEl = document.querySelector<HTMLElement>(
+                    `td[data-platform="${p.id}"] [data-field="effective-deduction"]`,
+                );
+                if (payoutMathBaseEl) {
+                    payoutMathBaseEl.textContent = formatPreciseINR(result.basePrice);
+                }
+                if (payoutMathCommRowEl && payoutMathCommEl) {
+                    payoutMathCommRowEl.style.display = result.commissionTotal > 0 ? "" : "none";
+                    payoutMathCommEl.textContent = `-${formatPreciseINR(result.commissionTotal)}`;
+                }
+                if (netPayoutEl) {
+                    netPayoutEl.textContent = formatPreciseINR(result.organizerNetPayout);
+                }
+                if (effectiveDeductionEl) {
+                    effectiveDeductionEl.textContent = `Effective deduction: ${result.effectiveDeductionPct.toFixed(1)}%`;
+                }
+            });
+        }
+
+        // Event Handlers
+        if (priceInput) {
+            priceInput.addEventListener("input", (e) => {
+                const val = parseFloat((e.target as HTMLInputElement).value);
+                ticketPrice = isNaN(val) || val < 0 ? 0 : val;
+                presetButtons.forEach((btn) => {
+                    const p = parseFloat(btn.getAttribute("data-price") || "-1");
+                    btn.classList.toggle("active", p === ticketPrice);
+                });
+                updateTable();
+            });
+        }
+
+        presetButtons.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                presetButtons.forEach((b) => b.classList.remove("active"));
+                btn.classList.add("active");
+                const val = parseFloat(btn.getAttribute("data-price") || "500");
+                ticketPrice = val;
+                if (priceInput) priceInput.value = val.toString();
+                updateTable();
+            });
+        });
+
+        platformToggles.forEach((toggle) => {
+            toggle.addEventListener("change", () => {
+                const pId = toggle.value;
+                if (!pId) return;
+                if (!toggle.checked) {
+                    if (selectedPlatformIds.size > 1) {
+                        selectedPlatformIds.delete(pId);
+                    } else {
+                        toggle.checked = true;
+                        return;
+                    }
+                } else {
+                    selectedPlatformIds.add(pId);
+                }
+                updateTable();
+            });
+        });
+
+        if (btnSelectAll) {
+            btnSelectAll.addEventListener("click", () => {
+                platforms.forEach((p) => selectedPlatformIds.add(p.id));
+                platformToggles.forEach((toggle) => (toggle.checked = true));
+                updateTable();
+            });
+        }
+
+        if (btnResetSelection) {
+            btnResetSelection.addEventListener("click", () => {
+                selectedPlatformIds = new Set<string>(defaultIds);
+                platformToggles.forEach((toggle) => {
+                    toggle.checked = selectedPlatformIds.has(toggle.value);
+                });
+                updateTable();
+            });
+        }
+
+        // AI Prompt copy
+        const copyBtn = document.getElementById("copy-ai-btn");
+        const copyBtnText = document.getElementById("copy-btn-text");
+
+        function generateAiPrompt(): string {
+            let prompt =
+                "I am analyzing Indian event ticketing platforms pricing and commercial fee structures using data from Turnout Tools.\n\n";
+            prompt +=
+                "Please fetch and read the platform fee comparison matrix from this plain text table URL:\n";
+            prompt += "https://turnout.tools/llm/pricing-comparison.txt\n\n";
+            prompt +=
+                'Question: [Ask your question here, e.g. "If I sell 500 tickets at ₹1000 each, which platform gives me the highest organizer net payout and lowest buyer fee?"]';
+            return prompt;
+        }
+
+        copyBtn?.addEventListener("click", async () => {
+            const textToCopy = generateAiPrompt();
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                if (copyBtnText) copyBtnText.textContent = "✓ Copied for AI!";
+                copyBtn.classList.add("copied");
+                setTimeout(() => {
+                    if (copyBtnText) copyBtnText.textContent = "Copy for AI";
+                    copyBtn.classList.remove("copied");
+                }, 2000);
+            } catch (err) {
+                console.error("Failed to copy AI prompt", err);
+            }
+        });
+
+        // Initial table setup (apply active platforms)
+        updateTable();
+    }
+</script>
+
+<style is:global>
+    .pricing-calculator-layout {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        margin-top: 1.5rem;
+        gap: 1.5rem;
+    }
+
+    /* Instruction Card */
+    .pricing-instructions-card {
+        background-color: var(--secondary);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .instruction-icon {
+        font-size: 1.25rem;
+        line-height: 1.4;
+    }
+
+    .instruction-content {
+        font-size: 0.9rem;
+        color: var(--muted-foreground);
+        line-height: 1.5;
+    }
+
+    .instruction-content strong {
+        color: var(--foreground);
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .instruction-content p {
+        margin: 0;
+    }
+
+    /* Controls Card */
+    .calculator-controls-card {
+        background-color: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-soft);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .control-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted-foreground);
+        margin-bottom: 0.5rem;
+    }
+
+    .input-with-presets {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .input-group {
+        display: flex;
+        align-items: center;
+        background-color: var(--background);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0 0.75rem;
+        width: 180px;
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .input-group:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px var(--ring, rgba(235, 94, 40, 0.2));
+    }
+
+    .currency-prefix {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--muted-foreground);
+        margin-right: 0.25rem;
+    }
+
+    .price-input {
+        border: none;
+        background: transparent;
+        padding: 0.6rem 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--foreground);
+        width: 100%;
+        outline: none;
+    }
+
+    .preset-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .preset-chip {
+        background-color: var(--secondary);
+        border: 1px solid var(--border);
+        color: var(--foreground);
+        font-size: 0.85rem;
+        font-weight: 500;
+        padding: 0.4rem 0.8rem;
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .preset-chip:hover {
+        background-color: var(--border);
+    }
+
+    .preset-chip.active {
+        background-color: var(--foreground);
+        color: var(--background);
+        border-color: var(--foreground);
+        font-weight: 600;
+    }
+
+    /* Platform filter section */
+    .platform-filter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .platform-filter-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .platform-filter-header .control-label {
+        margin-bottom: 0;
+    }
+
+    .platform-filter-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .filter-action-btn {
+        background: none;
+        border: none;
+        color: var(--primary);
+        font-size: 0.8rem;
+        cursor: pointer;
+        padding: 0;
+        text-decoration: underline;
+    }
+
+    /* Controls AI container */
+    .controls-ai-container {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-left: auto;
+    }
+
+    .ai-help-text {
+        font-size: 0.78rem;
+        font-style: italic;
+        color: var(--muted-foreground);
+        opacity: 0.85;
+        line-height: 1.25;
+        text-align: right;
+        max-width: 280px;
+    }
+
+    .copy-ai-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--primary);
+        background: rgba(var(--primary-rgb, 124, 58, 237), 0.08);
+        border: 1px solid var(--primary);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .copy-ai-btn:hover {
+        background: rgba(var(--primary-rgb, 124, 58, 237), 0.18);
+        box-shadow: 0 0 10px rgba(var(--primary-rgb, 124, 58, 237), 0.25);
+    }
+
+    .copy-ai-btn.copied {
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.15);
+        border-color: #10b981;
+    }
+
+    @media (max-width: 900px) {
+        .controls-ai-container {
+            margin-left: 0;
+            width: 100%;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            padding-top: 0.75rem;
+        }
+        .ai-help-text {
+            text-align: left;
+        }
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .checkbox-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        user-select: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border);
+        transition: all 0.2s ease;
+        opacity: 0.6;
+    }
+
+    .checkbox-label:hover {
+        background: rgba(var(--primary-rgb, 124, 58, 237), 0.05);
+        border-color: var(--primary);
+        opacity: 0.85;
+    }
+
+    .checkbox-label:has(.platform-toggle:checked) {
+        background: rgba(var(--primary-rgb, 124, 58, 237), 0.08);
+        border-color: var(--primary);
+        opacity: 1;
+        box-shadow: 0 0 0 1px rgba(var(--primary-rgb, 124, 58, 237), 0.2);
+    }
+
+    .platform-toggle {
+        display: none;
+    }
+
+    .platform-select-favicon {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        object-fit: contain;
+        filter: grayscale(20%);
+        transition: filter 0.2s ease;
+    }
+
+    .checkbox-label:has(.platform-toggle:checked) .platform-select-favicon {
+        filter: none;
+    }
+
+    .platform-label-text {
+        font-weight: 500;
+    }
+
+    .platform-header-content {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 0.5rem;
+        vertical-align: middle;
+        font-weight: 700;
+    }
+
+    .platform-favicon {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        object-fit: contain;
+        background: transparent;
+    }
+
+    /* Comparison Matrix Container & Table (matched from PlatformComparisonTable) */
+    .comparison-matrix-container {
+        width: 100%;
+        overflow-x: auto;
+        margin: 0;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: var(--card, #1e1e2e);
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2);
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+    }
+
+    .comparison-matrix-container::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .comparison-matrix-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .comparison-matrix-container::-webkit-scrollbar-thumb {
+        background-color: var(--border);
+        border-radius: 3px;
+    }
+
+    .comparison-matrix-container::-webkit-scrollbar-thumb:hover {
+        background-color: var(--primary);
+    }
+
+    .comparison-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.9rem;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .comparison-table th {
+        font-weight: 600;
+        color: var(--muted-foreground);
+        background: rgba(0, 0, 0, 0.1);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .feature-col {
+        min-width: 240px;
+        width: 35%;
+    }
+
+    .platform-col {
+        text-align: left;
+        font-weight: 700;
+    }
+
+    .feature-name {
+        vertical-align: top;
+    }
+
+    .feature-title-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .feature-title-wrapper {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .feature-title {
+        font-weight: 600;
+        color: var(--foreground);
+    }
+
+    .feature-description {
+        font-size: 0.75rem;
+        font-weight: 400;
+        color: var(--muted-foreground);
+        opacity: 0.8;
+        line-height: 1.35;
+        white-space: normal;
+    }
+
+    .cell-value {
+        text-align: left;
+        font-weight: 500;
+        vertical-align: top;
+    }
+
+    .cell-content-stacked {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 0.25rem;
+        width: 100%;
+    }
+
+    .cell-primary {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--foreground);
+    }
+
+    .cell-payout {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--primary);
+    }
+
+    .cell-val {
+        font-weight: 600;
+        color: var(--foreground);
+    }
+
+    .cell-sub {
+        font-size: 0.78rem;
+        color: var(--muted-foreground);
+        margin-top: 0.2rem;
+        line-height: 1.3;
+    }
+
+    .badge-zero {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        background-color: var(--secondary);
+        color: var(--muted-foreground);
+    }
+
+    .text-danger {
+        color: #e53935;
+    }
+
+    .text-warning {
+        color: #d97706;
+    }
+
+    .highlight-row {
+        background-color: rgba(var(--primary-rgb, 124, 58, 237), 0.04);
+    }
+
+    .net-row {
+        background-color: rgba(var(--primary-rgb, 124, 58, 237), 0.08);
+    }
+
+    .net-row td {
+        border-bottom: 2px solid var(--border);
+    }
+
+    .caveats-list {
+        margin: 0;
+        padding-left: 1.1rem;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        color: var(--muted-foreground);
+        text-align: left;
+    }
+
+    .caveats-list li {
+        margin-bottom: 0.35rem;
+    }
+
+    .empty-state {
+        padding: 3rem !important;
+        text-align: center;
+        color: var(--muted-foreground);
+        font-style: italic;
+    }
+
+    /* Math Breakup Cards */
+    .math-breakup-card {
+        display: inline-flex;
+        flex-direction: column;
+        background: rgba(0, 0, 0, 0.18);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.6rem 0.85rem;
+        min-width: 140px;
+        font-family: var(--font-mono, monospace);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .math-breakup-payout {
+        background: rgba(var(--primary-rgb, 124, 58, 237), 0.06);
+        border-color: rgba(var(--primary-rgb, 124, 58, 237), 0.25);
+    }
+
+    .math-breakup-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.75rem;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        color: var(--muted-foreground);
+    }
+
+    .math-breakup-line.math-op-add {
+        color: var(--warning, #d97706);
+    }
+
+    .math-breakup-line.math-op-sub {
+        color: var(--destructive, #e53935);
+    }
+
+    .math-label {
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        opacity: 0.85;
+    }
+
+    .math-op {
+        font-weight: 700;
+        margin-right: 0.15rem;
+    }
+
+    .math-value {
+        font-weight: 600;
+        text-align: right;
+    }
+
+    .math-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 0.35rem 0;
+        border-top: 1px dashed rgba(255, 255, 255, 0.15);
+    }
+
+    .math-total-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.75rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--foreground);
+    }
+
+    .math-total-val {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--foreground);
+    }
+
+    .math-payout-val {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--primary);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>

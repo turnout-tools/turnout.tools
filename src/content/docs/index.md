@@ -22,6 +22,14 @@ Welcome to the Turnout Knowledge Base. These are a set of guides, playbooks, and
 
   <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; background: var(--card); display: flex; flex-direction: column; justify-content: space-between;">
     <div>
+      <h3 style="margin-top: 0; color: var(--primary);">Ticket Fees Comparison</h3>
+      <p style="font-size: 0.95rem; margin-bottom: 1.5rem;">Compare ticket fees across event platforms in India</p>
+    </div>
+    <a href="/docs/pricing-comparison/" style="font-weight: 600; text-decoration: none; color: var(--primary); font-size: 0.9rem;">View price calculator →</a>
+  </div>
+
+  <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; background: var(--card); display: flex; flex-direction: column; justify-content: space-between;">
+    <div>
       <h3 style="margin-top: 0; color: var(--primary);">Code of Conduct Generator</h3>
       <p style="font-size: 0.95rem; margin-bottom: 1.5rem;">Create a code of conduct for your community</p>
     </div>
